@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📊 Google Sheets CRM</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f4f7fc;
+      font-family: 'Inter', sans-serif;
+      padding: 1rem;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+    .app-container {
+      max-width: 1220px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 14px 28px -16px rgba(0,0,0,0.18);
+      padding: 1rem 1rem 1.25rem;
+    }
+    .crm-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #e9eef3;
+      padding-bottom: 0.8rem;
+    }
+    .crm-header h1 {
+      font-weight: 700;
+      font-size: 1.45rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #0b2b4a;
+    }
+    .crm-header h1 i { color: #1a73e8; font-size: 1.5rem; }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .header-actions button {
+      background: white;
+      border: 1px solid #d0d9e6;
+      padding: 0.45rem 0.8rem;
+      border-radius: 14px;
+      font-weight: 500;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #1e293b;
+      cursor: pointer;
+      transition: 0.15s;
+      background: #fafcfd;
+    }
+    .header-actions button i { color: #1a73e8; }
+    .header-actions button:hover {
+      background: #eef3f9;
+      border-color: #a5b9d0;
+      transform: scale(0.97);
+    }
+    .header-actions .btn-primary {
+      background: #1a73e8;
+      border: 1px solid #1a73e8;
+      color: white;
+    }
+    .header-actions .btn-primary i { color: white; }
+    .header-actions .btn-primary:hover { background: #1557b0; border-color: #1557b0; }
+    .header-actions .btn-success {
+      background: #34a853;
+      border: 1px solid #34a853;
+      color: white;
+    }
+    .header-actions .btn-success i { color: white; }
+    .header-actions .btn-success:hover { background: #2d9249; border-color: #2d9249; }
+    .header-actions .btn-google {
+      background: #4285f4;
+      border: 1px solid #4285f4;
+      color: white;
+    }
+    .header-actions .btn-google i { color: white; }
+    .header-actions .btn-google:hover { background: #3367d6; border-color: #3367d6; }
+    .header-actions .btn-danger {
+      background: #d93025;
+      border: 1px solid #d93025;
+      color: white;
+    }
+    .header-actions .btn-danger i { color: white; }
+    .header-actions .btn-danger:hover { background: #b3261e; border-color: #b3261e; }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 1rem;
+      background: #f8faff;
+      padding: 0.8rem;
+      border-radius: 16px;
+      border: 1px solid #e2e9f2;
+    }
+    .dash-card {
+      background: white;
+      padding: 0.65rem 0.8rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      border: 1px solid #eef3f9;
+      text-align: center;
+    }
+    .dash-card .dash-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #6c81a0;
+      margin-bottom: 4px;
+    }
+    .dash-card .dash-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0b2b4a;
+    }
+    .dash-card .dash-value.month { font-size: 1.1rem; color: #1a73e8; }
+    .dash-card.highlight { background: #e8f0fe; border-color: #1a73e8; }
+    .dash-card.highlight .dash-value { color: #1a5fb0; }
+    .dash-card.success { background: #e6f4ea; border-color: #34a853; }
+    .dash-card.success .dash-value { color: #1e7e34; }
+
+    .data-entry-panel {
+      position: fixed;
+      top: 92px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.98);
+      width: min(980px, calc(100vw - 24px));
+      max-height: calc(100vh - 120px);
+      overflow: auto;
+      background: #f8faff;
+      border-radius: 18px;
+      padding: 1rem 1rem 1.1rem;
+      border: 1px solid #e2e9f2;
+      box-shadow: 0 4px 10px rgba(0, 20, 40, 0.02);
+      display: none;
+      z-index: 999;
+    }
+    .data-entry-panel.show {
+      display: block;
+      transform: translateX(-50%) scale(1);
+      box-shadow: 0 24px 60px rgba(11, 43, 74, 0.22);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px 12px;
+      align-items: end;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-group label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #556b82;
+    }
+    .form-group input, .form-group select {
+      background: white;
+      border: 1px solid #dce3ec;
+      border-radius: 12px;
+      padding: 0.5rem 0.7rem;
+      font-size: 0.82rem;
+      font-family: 'Inter', sans-serif;
+      transition: 0.15s;
+      width: 100%;
+      appearance: auto;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    }
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .form-actions button {
+      padding: 0.55rem 1.1rem;
+      border-radius: 12px;
+      border: none;
+      font-weight: 500;
+      font-size: 0.82rem;
+      background: #e9eff6;
+      color: #1e293b;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .form-actions .btn-save { background: #1a73e8; color: white; }
+    .form-actions .btn-save:hover { background: #1557b0; }
+    .form-actions .btn-cancel { background: #eef2f7; border: 1px solid #d0d9e6; }
+    .form-actions .btn-cancel:hover { background: #e2e9f2; }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid #e6edf5;
+      background: white;
+      margin-top: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+      min-width: 940px;
+      table-layout: fixed;
+    }
+    th {
+      background: #f2f7fe;
+      color: #1e3a5f;
+      font-weight: 600;
+      padding: 0.62rem 0.5rem;
+      text-align: left;
+      white-space: normal;
+      border-bottom: 2px solid #dce3ec;
+    }
+    td {
+      padding: 0.5rem 0.5rem;
+      border-bottom: 1px solid #edf2f8;
+      vertical-align: middle;
+      background-color: white;
+      word-break: break-word;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f9fcff; }
+    .col-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .col-actions button {
+      background: transparent;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: 0.1s;
+      border: 1px solid transparent;
+    }
+    .col-actions .edit-btn { color: #1a5fb0; background: #e9f0fe; }
+    .col-actions .edit-btn:hover { background: #d4e2fc; }
+    .col-actions .delete-btn { color: #b3261e; background: #fde8e6; }
+    .col-actions .delete-btn:hover { background: #fcd3d0; }
+    .badge-id {
+      font-family: monospace;
+      background: #eef3f9;
+      padding: 2px 10px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
+    .empty-row td {
+      padding: 2.5rem;
+      text-align: center;
+      color: #6c81a0;
+      font-style: italic;
+    }
+    .status-msg {
+      font-size: 0.85rem;
+      color: #1e6f3f;
+      background: #e3f5eb;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      display: inline-block;
+    }
+    .status-msg i { margin-right: 6px; }
+    .status-msg.error { background: #fce8e6; color: #b3261e; }
+    .status-msg.loading { background: #fef7e0; color: #b06500; }
+    .hidden-field { display: none !important; }
+    @media (max-width: 700px) {
+      body { padding: 0.5rem; }
+      .app-container { padding: 0.8rem; border-radius: 16px; }
+      .crm-header { flex-direction: column; align-items: start; gap: 10px; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .dashboard { grid-template-columns: 1fr 1fr; }
+      table { min-width: 860px; }
+      .data-entry-panel {
+        top: 64px;
+        width: calc(100vw - 12px);
+        max-height: calc(100vh - 80px);
+      }
+    }
+    @media (max-width: 1100px) {
+      th:nth-child(8), td:nth-child(8),
+      th:nth-child(9), td:nth-child(9) {
+        display: none;
+      }
+    }
+    @media (max-width: 900px) {
+      th:nth-child(4), td:nth-child(4) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+  <!-- HEADER -->
+  <div class="crm-header">
+    <h1><i class="fas fa-cloud"></i> CRM · Google Sheet</h1>
+    <div class="header-actions">
+      <button onclick="exportExcel()" class="btn-success"><i class="fas fa-file-excel"></i> Export Excel</button>
+      <button onclick="clearAllData()" class="btn-danger"><i class="fas fa-trash-alt"></i> Clear All</button>
+      <button onclick="refreshTable()"><i class="fas fa-sync-alt"></i> Refresh</button>
+      <button class="btn-primary" onclick="toggleForm()"><i class="fas fa-plus-circle"></i> <span id="toggleBtnText">New Entry</span></button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+    <div class="dash-card highlight">
+      <div class="dash-label"><i class="fas fa-calendar-alt"></i> Total Months</div>
+      <div class="dash-value month" id="dashMonths">0</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-label"><i class="fas fa-id-card"></i> Total ID</div>
+      <div class="dash-value" id="dashTotalId">0</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-label"><i class="fas fa-money-bill-wave"></i> Working Amount</div>
+      <div class="dash-value" id="dashWorking">₹0</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-label"><i class="fas fa-exchange-alt"></i> Transfer Amt</div>
+      <div class="dash-value" id="dashTransfer">₹0</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-label"><i class="fas fa-hand-holding-usd"></i> Monthly Paid</div>
+      <div class="dash-value" id="dashMonthlyPaid">₹0</div>
+    </div>
+    <div class="dash-card success">
+      <div class="dash-label"><i class="fas fa-arrow-right"></i> Remaining Transferable</div>
+      <div class="dash-value" id="dashRemainingTransferable">₹0</div>
+    </div>
+  </div>
+
+  <!-- ENTRY / EDIT FORM -->
+  <div class="data-entry-panel" id="entryPanel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <span style="font-weight: 500; font-size: 1rem;"><i class="fas fa-pen-fancy" style="color:#1a73e8; margin-right: 8px;"></i><span id="formTitle">Add New Record</span></span>
+      <span id="editRowId" style="background: #e9eff6; padding: 0.2rem 1rem; border-radius: 40px; font-size: 0.8rem; display: none;">Editing Row: <span id="editIdDisplay"></span></span>
+    </div>
+    <div class="form-grid" id="formGrid">
+      <div class="form-group">
+        <label>DATE</label>
+        <input type="date" id="fDate" onchange="refreshMonthDropdownFromDate()" />
+      </div>
+      <div class="form-group">
+        <label>MONTH</label>
+        <select id="fMonth"></select>
+      </div>
+      <div class="form-group">
+        <label>TOTAL ID</label>
+        <input type="number" id="fTotalId" placeholder="ID" />
+      </div>
+      <div class="form-group">
+        <label>WORKING AMOUNT</label>
+        <input type="number" step="0.01" id="fWorkingAmt" placeholder="0.00" oninput="calculatePendingAndRemaining()" />
+      </div>
+      <div class="form-group">
+        <label>TRANSFER AMT</label>
+        <input type="number" step="0.01" id="fTransferAmt" placeholder="0.00" oninput="calculateRemaining()" />
+      </div>
+      <div class="form-group">
+        <label>MONTHLY PAID AMT</label>
+        <input type="number" step="0.01" id="fMonthlyPaid" placeholder="0.00" oninput="calculateRemaining()" />
+      </div>
+      <div class="form-group">
+        <label>OTHER AMT FROM SETUP AND UPLOADING</label>
+        <input type="number" step="0.01" id="fOtherAmt" placeholder="0.00" />
+      </div>
+      <div class="form-group">
+        <label>REMARKS</label>
+        <input type="text" id="fRemarks" placeholder="remarks" />
+      </div>
+      <div class="form-group hidden-field">
+        <label>TOTAL PENDING AMT</label>
+        <input type="number" step="0.01" id="fTotalPending" />
+      </div>
+      <div class="form-group hidden-field">
+        <label>REMAINING AMT</label>
+        <input type="number" step="0.01" id="fRemainingAmt" />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-save" id="saveBtn" onclick="handleSave()"><i class="fas fa-save"></i> Save</button>
+      <button class="btn-cancel" onclick="closeForm()"><i class="fas fa-times"></i> Cancel</button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; flex-wrap: wrap;">
+    <span style="font-weight: 500;"><i class="fas fa-list-ul" style="color: #1a73e8;"></i> All Records (<span id="rowCount">0</span>)</span>
+    <span id="statusMessage" class="status-msg"><i class="fas fa-check-circle"></i> Ready</span>
+  </div>
+  <div class="table-wrapper">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>DATE</th><th>MONTH</th><th>TOTAL ID</th>
+          <th>WORKING AMOUNT</th><th>TRANSFER AMT</th><th>MONTHLY PAID AMT</th>
+          <th>OTHER AMT</th><th>REMARKS</th>
+          <th style="background:#e8f0fe; color:#1a5fb0;">TOTAL PENDING</th>
+          <th style="background:#e8f0fe; color:#1a5fb0;">REMAINING</th>
+          <th style="min-width:130px;">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // CONFIGURATION - YOUR GOOGLE APPS SCRIPT WEB APP URL
+  // ============================================================
+  const GS_URL = 'https://script.google.com/macros/s/AKfycbzQUhcHjPzSfmR4V7yjM7yCy5eT2S5NGNOoVb6QXW1EWyLJABgQLuR9PqbX3p9xIEF2-g/exec';
+
+  // ============================================================
+  // GLOBALS
+  // ============================================================
+  let records = [];
+  let nextId = 1;
+  let editingRowId = null;
+  let isSynced = false;
+  let callbackCounter = 0;
+  let jsonpCounter = 0;
+
+  // ============================================================
+  // LOAD FROM SHEET
+  // ============================================================
+  function loadFromSheet(options = {}) {
+    const silent = options.silent !== false;
+
+    if (!silent) {
+      updateStatus('Loading data...', 'loading');
+    }
+
+    jsonpRequest({ action: 'getRecords' })
+      .then(data => {
+        if (data.status === 'success' && data.data) {
+          records = recalculateDerivedRecords(data.data);
+          let maxId = 0;
+          records.forEach(r => { if (r.id > maxId) maxId = r.id; });
+          nextId = maxId + 1;
+          isSynced = true;
+          updateSyncStatus();
+          renderTable(true);
+          if (!silent) {
+            updateStatus('Loaded ' + records.length + ' records');
+          }
+        } else {
+          if (!silent) {
+            updateStatus('No data found', 'error');
+          }
+        }
+      })
+      .catch(err => {
+        if (!silent) {
+          updateStatus('Load failed: ' + err.message, 'error');
+        }
+      });
+  }
+
+  // ============================================================
+  // CALL GS ACTION
+  // ============================================================
+  function callGSAction(action, data = null, rowIndex = null) {
+    const params = { action };
+    if (data) params.data = JSON.stringify(data);
+    if (rowIndex !== null) params.rowIndex = String(rowIndex);
+
+    return jsonpRequest(params).then(result => {
+      if (result.status === 'success') {
+        return result;
+      }
+      throw new Error(result.message || 'Unknown error');
+    });
+  }
+
+  // ============================================================
+  // JSONP REQUEST HELPER
+  // ============================================================
+  function jsonpRequest(params) {
+    return new Promise((resolve, reject) => {
+      const callbackName = 'gs_jsonp_' + Date.now() + '_' + (++jsonpCounter);
+      const script = document.createElement('script');
+      const query = new URLSearchParams();
+      query.set('callback', callbackName);
+
+      Object.keys(params || {}).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null) {
+          query.set(key, params[key]);
+        }
+      });
+
+      const cleanup = () => {
+        if (window[callbackName]) delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      };
+
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error('Request timed out'));
+      }, 15000);
+
+      window[callbackName] = function (payload) {
+        clearTimeout(timeoutId);
+        cleanup();
+        resolve(payload);
+      };
+
+      script.src = GS_URL + '?' + query.toString();
+      script.async = true;
+      script.onerror = function () {
+        clearTimeout(timeoutId);
+        cleanup();
+        reject(new Error('Unable to load Google Sheet response'));
+      };
+
+      (document.head || document.body || document.documentElement).appendChild(script);
+    });
+  }
+
+  // ============================================================
+  // FORM TOGGLE
+  // ============================================================
+  function toggleForm() {
+    const panel = document.getElementById('entryPanel');
+    const btnText = document.getElementById('toggleBtnText');
+    if (panel.classList.contains('show')) {
+      closeForm();
+    } else {
+      resetFormAndClearSelection();
+      panel.classList.add('show');
+      btnText.textContent = 'Close Form';
+    }
+  }
+
+  function closeForm() {
+    const panel = document.getElementById('entryPanel');
+    const btnText = document.getElementById('toggleBtnText');
+    panel.classList.remove('show');
+    btnText.textContent = 'New Entry';
+    if (editingRowId !== null) {
+      resetFormAndClearSelection();
+    }
+  }
+
+  function openFormForEdit() {
+    const panel = document.getElementById('entryPanel');
+    const btnText = document.getElementById('toggleBtnText');
+    panel.classList.add('show');
+    btnText.textContent = 'Close Form';
+  }
+
+  // ============================================================
+  // MONTH DROPDOWN
+  // ============================================================
+  function getMonthOptions(anchorDate = new Date()) {
+    const baseDate = anchorDate instanceof Date ? anchorDate : new Date(anchorDate);
+    const validBase = isNaN(baseDate) ? new Date() : baseDate;
+    const currentYear = validBase.getFullYear();
+    const currentMonth = validBase.getMonth();
+    const months = [];
+    for (let offset = -3; offset <= 3; offset++) {
+      const d = new Date(currentYear, currentMonth + offset, 1);
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const monthName = d.toLocaleString('en-US', { month: 'short' });
+      months.push({
+        label: `${monthName}-${year}`,
+        value: `${monthName}-${year}`,
+        year: year,
+        monthIndex: month
+      });
+    }
+    return months;
+  }
+
+  function populateMonthDropdown(selectElement, selectedValue, anchorDate = null) {
+    if (!selectElement) return;
+    const options = getMonthOptions(anchorDate || document.getElementById('fDate').value || new Date());
+    selectElement.innerHTML = '';
+    options.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt.value;
+      option.textContent = opt.label;
+      if (selectedValue && opt.value === selectedValue) {
+        option.selected = true;
+      }
+      selectElement.appendChild(option);
+    });
+    if (!selectedValue) {
+      const defaultIndex = 3;
+      if (selectElement.options[defaultIndex]) {
+        selectElement.options[defaultIndex].selected = true;
+      }
+    }
+  }
+
+  function refreshMonthDropdownFromDate() {
+    const dateInput = document.getElementById('fDate');
+    const monthSelect = document.getElementById('fMonth');
+    if (!dateInput || !monthSelect) return;
+    const currentSelected = monthSelect.value || null;
+    populateMonthDropdown(monthSelect, currentSelected, dateInput.value || new Date());
+  }
+
+  // ============================================================
+  // DATE HELPERS
+  // ============================================================
+  function pad2(value) {
+    return String(value).padStart(2, '0');
+  }
+
+  function extractYear(value) {
+    const str = String(value || '');
+    const yearMatch = str.match(/\b(19|20)\d{2}\b/);
+    if (yearMatch) return yearMatch[0];
+    const shortYearMatch = str.match(/\b\d{2}\b/);
+    if (shortYearMatch) return `20${shortYearMatch[0]}`;
+    return '';
+  }
+
+  function extractMonthName(value) {
+    const str = String(value || '').toLowerCase();
+    const months = [
+      ['jan', 'january'],
+      ['feb', 'february'],
+      ['mar', 'march'],
+      ['apr', 'april'],
+      ['may'],
+      ['jun', 'june'],
+      ['jul', 'july'],
+      ['aug', 'august'],
+      ['sep', 'sept', 'september'],
+      ['oct', 'october'],
+      ['nov', 'november'],
+      ['dec', 'december']
+    ];
+
+    for (const names of months) {
+      if (names.some(name => str.includes(name))) {
+        return names[0].slice(0, 1).toUpperCase() + names[0].slice(1, 3);
+      }
+    }
+    return '';
+  }
+
+  function formatMonthForDisplay(value, fallbackDate = '') {
+    if (!value) return '';
+
+    const str = String(value).trim();
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      const d = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+      return d.toLocaleString('en-US', { month: 'short' }) + '-' + d.getFullYear();
+    }
+
+    const explicitMatch = str.match(/^([A-Za-z]{3,9})[-\s\/,]*?(\d{2,4})$/);
+    if (explicitMatch) {
+      const monthToken = explicitMatch[1].slice(0, 3).charAt(0).toUpperCase() + explicitMatch[1].slice(1, 3).toLowerCase();
+      const yearToken = explicitMatch[2].length === 2 ? `20${explicitMatch[2]}` : explicitMatch[2];
+      return `${monthToken}-${yearToken}`;
+    }
+
+    const monthToken = extractMonthName(str);
+    if (monthToken) {
+      const yearToken = extractYear(str) || extractYear(fallbackDate) || new Date().getFullYear();
+      return `${monthToken}-${yearToken}`;
+    }
+
+    return str;
+  }
+
+  function formatDateForDisplay(value) {
+    if (!value) return '';
+    if (value instanceof Date && !isNaN(value)) {
+      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
+    }
+
+    const str = String(value).trim();
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
+    }
+
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
+    if (dmyMatch) {
+      const day = pad2(dmyMatch[1]);
+      const month = pad2(dmyMatch[2]);
+      const year = dmyMatch[3].length === 2 ? `20${dmyMatch[3]}` : dmyMatch[3];
+      return `${day}-${month}-${year}`;
+    }
+
+    return str;
+  }
+
+  function formatDateForInput(value) {
+    if (!value) return '';
+    if (value instanceof Date && !isNaN(value)) {
+      const year = value.getFullYear();
+      const month = pad2(value.getMonth() + 1);
+      const day = pad2(value.getDate());
+      return `${year}-${month}-${day}`;
+    }
+
+    const str = String(value).trim();
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) return str;
+
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
+    if (dmyMatch) {
+      const day = pad2(dmyMatch[1]);
+      const month = pad2(dmyMatch[2]);
+      const year = dmyMatch[3].length === 2 ? `20${dmyMatch[3]}` : dmyMatch[3];
+      return `${year}-${month}-${day}`;
+    }
+
+    const parsed = new Date(str);
+    if (!isNaN(parsed)) {
+      return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}-${pad2(parsed.getDate())}`;
+    }
+
+    return '';
+  }
+
+  function toSafeNumber(value, fallback = 0) {
+    const num = typeof value === 'number' ? value : parseFloat(value);
+    return Number.isFinite(num) ? num : fallback;
+  }
+
+  function parseDateValue(value) {
+    if (!value) return null;
+    if (value instanceof Date && !isNaN(value)) return value.getTime();
+
+    const str = String(value).trim();
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3])).getTime();
+    }
+
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
+    if (dmyMatch) {
+      const year = dmyMatch[3].length === 2 ? Number(`20${dmyMatch[3]}`) : Number(dmyMatch[3]);
+      return new Date(year, Number(dmyMatch[2]) - 1, Number(dmyMatch[1])).getTime();
+    }
+
+    const parsed = new Date(str);
+    if (!isNaN(parsed)) return parsed.getTime();
+    return null;
+  }
+
+  function sortByDateDesc(recordsList) {
+    return [...recordsList].sort((a, b) => {
+      const aTime = parseDateValue(a.date);
+      const bTime = parseDateValue(b.date);
+      if (aTime === null && bTime === null) return 0;
+      if (aTime === null) return 1;
+      if (bTime === null) return -1;
+      return bTime - aTime;
+    });
+  }
+
+  function sortByDateAsc(recordsList) {
+    return [...recordsList].sort((a, b) => {
+      const aTime = parseDateValue(a.date);
+      const bTime = parseDateValue(b.date);
+      if (aTime === null && bTime === null) return 0;
+      if (aTime === null) return 1;
+      if (bTime === null) return -1;
+      return aTime - bTime;
+    });
+  }
+
+  function normalizeLoadedRecord(rec) {
+    return {
+      id: rec.id,
+      date: formatDateForDisplay(rec.date),
+      month: formatMonthForDisplay(rec.month, rec.date),
+      totalId: toSafeNumber(rec.totalId),
+      workingAmt: toSafeNumber(rec.workingAmt),
+      transferAmt: toSafeNumber(rec.transferAmt),
+      monthlyPaid: toSafeNumber(rec.monthlyPaid),
+      otherAmt: toSafeNumber(rec.otherAmt),
+      remarks: rec.remarks ? String(rec.remarks).trim() : '',
+      totalPending: toSafeNumber(rec.totalPending),
+      remainingAmt: toSafeNumber(rec.remainingAmt)
+    };
+  }
+
+  function recalculateDerivedRecords(recordsList) {
+    const sorted = sortByDateAsc(recordsList.map(normalizeLoadedRecord));
+    let previousRemaining = 0;
+
+    return sorted.map((rec) => {
+      const totalPending = rec.workingAmt + previousRemaining;
+      const remainingAmt = totalPending - rec.transferAmt - rec.monthlyPaid;
+      previousRemaining = remainingAmt;
+
+      return {
+        ...rec,
+        totalPending: Number.isFinite(totalPending) ? totalPending : 0,
+        remainingAmt: Number.isFinite(remainingAmt) ? remainingAmt : 0
+      };
+    });
+  }
+
+  // ============================================================
+  // AUTO CALCULATION
+  // ============================================================
+  function getPreviousRemaining() {
+    if (records.length === 0) return 0;
+    const sorted = sortByDateDesc(records);
+    const latest = sorted[0];
+    return latest.remainingAmt || 0;
+  }
+
+  function calculatePendingAndRemaining() {
+    const workingAmt = parseFloat(document.getElementById('fWorkingAmt').value) || 0;
+    const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
+    const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
+    
+    let prevRemaining = 0;
+    if (editingRowId !== null) {
+      const sorted = sortByDateDesc([...records].filter(r => r.id !== editingRowId));
+      if (sorted.length > 0) {
+        prevRemaining = sorted[0].remainingAmt || 0;
+      }
+    } else {
+      prevRemaining = getPreviousRemaining();
+    }
+
+    const totalPending = workingAmt + prevRemaining;
+    const remaining = totalPending - transferAmt - monthlyPaid;
+
+    document.getElementById('fTotalPending').value = totalPending.toFixed(2);
+    document.getElementById('fRemainingAmt').value = remaining.toFixed(2);
+  }
+
+  function calculateRemaining() {
+    const totalPending = parseFloat(document.getElementById('fTotalPending').value) || 0;
+    const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
+    const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
+    const remaining = totalPending - transferAmt - monthlyPaid;
+    document.getElementById('fRemainingAmt').value = remaining.toFixed(2);
+  }
+
+  // ============================================================
+  // DASHBOARD
+  // ============================================================
+  function updateDashboard() {
+    if (records.length === 0) {
+      document.getElementById('dashMonths').textContent = '0';
+      document.getElementById('dashTotalId').textContent = '0';
+      document.getElementById('dashWorking').textContent = '₹0';
+      document.getElementById('dashTransfer').textContent = '₹0';
+      document.getElementById('dashMonthlyPaid').textContent = '₹0';
+      document.getElementById('dashRemainingTransferable').textContent = '₹0';
+      return;
+    }
+
+    const uniqueMonths = new Set(records.map(r => r.month));
+    document.getElementById('dashMonths').textContent = uniqueMonths.size;
+
+    let totalId = 0, working = 0, transfer = 0, monthlyPaid = 0;
+    records.forEach(r => {
+      totalId += r.totalId || 0;
+      working += r.workingAmt || 0;
+      transfer += r.transferAmt || 0;
+      monthlyPaid += r.monthlyPaid || 0;
+    });
+
+    const remainingTransferable = working - transfer - monthlyPaid;
+
+    document.getElementById('dashTotalId').textContent = totalId;
+    document.getElementById('dashWorking').textContent = '₹' + working.toFixed(2);
+    document.getElementById('dashTransfer').textContent = '₹' + transfer.toFixed(2);
+    document.getElementById('dashMonthlyPaid').textContent = '₹' + monthlyPaid.toFixed(2);
+    document.getElementById('dashRemainingTransferable').textContent = '₹' + remainingTransferable.toFixed(2);
+  }
+
+  // ============================================================
+  // RENDER TABLE
+  // ============================================================
+  function renderTable(silent = false) {
+    const tbody = document.getElementById('tableBody');
+    const rowCountSpan = document.getElementById('rowCount');
+    if (!records.length) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="12">📭 No records yet. Add a new entry above.</td></tr>`;
+      rowCountSpan.textContent = '0';
+      updateDashboard();
+      return;
+    }
+    let html = '';
+    records.forEach((rec, index) => {
+      const realIndex = index + 1;
+      html += `<tr>
+        <td><span class="badge-id">${realIndex}</span></td>
+        <td>${formatDateForDisplay(rec.date)}</td>
+        <td>${rec.month || ''}</td>
+        <td>${rec.totalId || ''}</td>
+        <td>${rec.workingAmt ?? ''}</td>
+        <td>${rec.transferAmt ?? ''}</td>
+        <td>${rec.monthlyPaid ?? ''}</td>
+        <td>${rec.otherAmt ?? ''}</td>
+        <td>${rec.remarks || ''}</td>
+        <td style="font-weight:600; color:#1a5fb0;">${rec.totalPending ?? ''}</td>
+        <td style="font-weight:600; color:#1a5fb0;">${rec.remainingAmt ?? ''}</td>
+        <td>
+          <div class="col-actions">
+            <button class="edit-btn" onclick="editRecord(${rec.id})"><i class="fas fa-pen"></i> Edit</button>
+            <button class="delete-btn" onclick="deleteRecord(${rec.id})"><i class="fas fa-trash"></i> Del</button>
+          </div>
+        </td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+    rowCountSpan.textContent = records.length;
+    updateDashboard();
+    if (!silent) {
+      updateStatus('✅ Loaded ' + records.length + ' records');
+    }
+  }
+
+  // ============================================================
+  // CRUD OPERATIONS
+  // ============================================================
+  function generateId() { return nextId++; }
+
+  function handleSave() {
+    const date = document.getElementById('fDate').value;
+    const monthSelect = document.getElementById('fMonth');
+    const month = formatMonthForDisplay(monthSelect.value, date);
+    const totalId = parseFloat(document.getElementById('fTotalId').value) || 0;
+    const workingAmt = parseFloat(document.getElementById('fWorkingAmt').value) || 0;
+    const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
+    const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
+    const otherAmt = parseFloat(document.getElementById('fOtherAmt').value) || 0;
+    const remarks = document.getElementById('fRemarks').value.trim();
+    const totalPending = parseFloat(document.getElementById('fTotalPending').value) || 0;
+    const remainingAmt = parseFloat(document.getElementById('fRemainingAmt').value) || 0;
+
+    if (!date || !month) {
+      alert('⚠️ Please enter DATE and MONTH (required).');
+      return;
+    }
+
+    const newRecord = {
+      date: formatDateForDisplay(date), month, totalId, workingAmt, transferAmt, monthlyPaid, otherAmt,
+      remarks, totalPending, remainingAmt
+    };
+
+    if (editingRowId !== null) {
+      const index = records.findIndex(r => r.id === editingRowId);
+      if (index !== -1) {
+        records[index] = { ...records[index], ...newRecord };
+        updateStatus('✏️ Record updated locally');
+        updateRecordInSheet(editingRowId, newRecord);
+      } else {
+        alert('Error: record not found.');
+        resetFormAndClearSelection();
+        renderTable();
+        return;
+      }
+    } else {
+      const newId = generateId();
+      newRecord.id = newId;
+      records.push(newRecord);
+      updateStatus('➕ New record added locally');
+      saveRecordToSheet(newRecord);
+    }
+
+    closeForm();
+    resetFormAndClearSelection();
+    renderTable();
+  }
+
+  function editRecord(id) {
+    const rec = records.find(r => r.id === id);
+    if (!rec) return;
+    document.getElementById('fDate').value = formatDateForInput(rec.date);
+    const monthSelect = document.getElementById('fMonth');
+    populateMonthDropdown(monthSelect, formatMonthForDisplay(rec.month, rec.date) || null, rec.date || document.getElementById('fDate').value);
+    document.getElementById('fTotalId').value = rec.totalId || '';
+    document.getElementById('fWorkingAmt').value = rec.workingAmt ?? '';
+    document.getElementById('fTransferAmt').value = rec.transferAmt ?? '';
+    document.getElementById('fMonthlyPaid').value = rec.monthlyPaid ?? '';
+    document.getElementById('fOtherAmt').value = rec.otherAmt ?? '';
+    document.getElementById('fRemarks').value = rec.remarks || '';
+    
+    editingRowId = rec.id;
+    calculatePendingAndRemaining();
+    
+    document.getElementById('editRowId').style.display = 'inline-block';
+    document.getElementById('editIdDisplay').textContent = editingRowId;
+    document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit" style="color:#1a73e8;"></i> Edit Record (Row ' + editingRowId + ')';
+    document.getElementById('saveBtn').innerHTML = '<i class="fas fa-pen"></i> Update';
+    updateStatus('✏️ Editing row: ' + editingRowId);
+    
+    openFormForEdit();
+  }
+
+  function deleteRecord(id) {
+    if (!confirm('⚠️ Delete this record permanently?')) return;
+    const rec = records.find(r => r.id === id);
+    if (!rec) return;
+    
+    deleteRecordFromSheet(id);
+    records = records.filter(r => r.id !== id);
+    if (editingRowId === id) resetFormAndClearSelection();
+    renderTable();
+    updateStatus('🗑️ Deleted record ID: ' + id);
+  }
+
+  // ============================================================
+  // GOOGLE SHEET SYNC FUNCTIONS
+  // ============================================================
+  function saveRecordToSheet(data) {
+    callGSAction('saveRecord', data)
+      .then(() => {
+        isSynced = true;
+        updateSyncStatus();
+      })
+      .catch(err => {
+        updateStatus('⚠️ Failed to sync: ' + err.message, 'error');
+      });
+  }
+
+  function updateRecordInSheet(rowIndex, data) {
+    callGSAction('updateRecord', data, rowIndex)
+      .then(() => {
+        isSynced = true;
+        updateSyncStatus();
+      })
+      .catch(err => {
+        updateStatus('⚠️ Failed to update: ' + err.message, 'error');
+      });
+  }
+
+  function deleteRecordFromSheet(rowIndex) {
+    callGSAction('deleteRecord', null, rowIndex)
+      .then(() => {
+        isSynced = false;
+        updateSyncStatus();
+        updateStatus('🗑️ Record deleted from Google Sheet');
+      })
+      .catch(err => {
+        updateStatus('⚠️ Failed to delete from sheet: ' + err.message, 'error');
+      });
+  }
+
+  function syncToSheet() {
+    loadFromSheet();
+  }
+
+  function clearAllData() {
+    if (!confirm('⚠️ This will delete ALL data from the sheet. Are you sure?')) return;
+    if (!confirm('⚠️ Final confirmation: This cannot be undone!')) return;
+    
+    callGSAction('clearAllData')
+      .then(() => {
+        records = [];
+        isSynced = false;
+        updateSyncStatus();
+        renderTable();
+        updateStatus('🗑️ All data cleared from Google Sheet');
+      })
+      .catch(err => {
+        updateStatus('⚠️ Failed to clear data: ' + err.message, 'error');
+      });
+  }
+
+  // ============================================================
+  // HELPER FUNCTIONS
+  // ============================================================
+  function resetFormAndClearSelection() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('fDate').value = today;
+    
+    const monthSelect = document.getElementById('fMonth');
+    populateMonthDropdown(monthSelect, null, today);
+    document.getElementById('fTotalId').value = '';
+    document.getElementById('fWorkingAmt').value = '';
+    document.getElementById('fTransferAmt').value = '';
+    document.getElementById('fMonthlyPaid').value = '';
+    document.getElementById('fOtherAmt').value = '';
+    document.getElementById('fRemarks').value = '';
+    document.getElementById('fTotalPending').value = '';
+    document.getElementById('fRemainingAmt').value = '';
+    
+    editingRowId = null;
+    document.getElementById('editRowId').style.display = 'none';
+    document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle" style="color:#1a73e8;"></i> Add New Record';
+    document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save"></i> Save';
+    updateStatus('📝 New entry mode');
+    
+    calculatePendingAndRemaining();
+  }
+
+  function refreshTable() {
+    renderTable();
+    updateStatus('🔄 Refreshed');
+  }
+
+  function updateStatus(msg, type = 'normal') {
+    const el = document.getElementById('statusMessage');
+    if (type === 'loading') {
+      el.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ' + msg;
+      el.className = 'status-msg loading';
+    } else if (type === 'error') {
+      el.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msg;
+      el.className = 'status-msg error';
+    } else {
+      el.innerHTML = '<i class="fas fa-circle" style="color:#1a73e8; font-size: 0.5rem;"></i> ' + msg;
+      el.className = 'status-msg';
+    }
+  }
+
+  function updateSyncStatus() {
+    return;
+  }
+
+  // ============================================================
+  // EXCEL EXPORT
+  // ============================================================
+  function exportExcel() {
+    if (records.length === 0) {
+      alert('⚠️ No data to export.');
+      return;
+    }
+
+    const excelData = records.map((rec, index) => ({
+      '#': index + 1,
+      'DATE': rec.date || '',
+      'MONTH': rec.month || '',
+      'TOTAL ID': rec.totalId || 0,
+      'WORKING AMOUNT': rec.workingAmt || 0,
+      'TRANSFER AMT': rec.transferAmt || 0,
+      'MONTHLY PAID AMT': rec.monthlyPaid || 0,
+      'OTHER AMT FROM SETUP AND UPLOADING': rec.otherAmt || 0,
+      'REMARKS': rec.remarks || '',
+      'TOTAL PENDING AMT': rec.totalPending || 0,
+      'REMAINING AMT': rec.remainingAmt || 0
+    }));
+
+    let totalId = 0, working = 0, transfer = 0, monthlyPaid = 0, other = 0, totalPending = 0, remaining = 0;
+    records.forEach(r => {
+      totalId += r.totalId || 0;
+      working += r.workingAmt || 0;
+      transfer += r.transferAmt || 0;
+      monthlyPaid += r.monthlyPaid || 0;
+      other += r.otherAmt || 0;
+      totalPending += r.totalPending || 0;
+      remaining += r.remainingAmt || 0;
+    });
+
+    excelData.push({
+      '#': 'TOTAL',
+      'DATE': '',
+      'MONTH': '',
+      'TOTAL ID': totalId,
+      'WORKING AMOUNT': working,
+      'TRANSFER AMT': transfer,
+      'MONTHLY PAID AMT': monthlyPaid,
+      'OTHER AMT FROM SETUP AND UPLOADING': other,
+      'REMARKS': '',
+      'TOTAL PENDING AMT': totalPending,
+      'REMAINING AMT': remaining
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    ws['!cols'] = [
+      { wch: 6 }, { wch: 14 }, { wch: 14 }, { wch: 12 },
+      { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 30 },
+      { wch: 20 }, { wch: 18 }, { wch: 16 }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'CRM_Data');
+    
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const filename = `CRM_Report_${dateStr}.xlsx`;
+    
+    XLSX.writeFile(wb, filename);
+    updateStatus('📥 Excel exported successfully!');
+  }
+
+  // ============================================================
+  // SEED DEMO DATA
+  // ============================================================
+  function seedDemoData() {
+    const demo = [
+      { date: '2026-01-15', month: 'Jan-2026', totalId: 101, workingAmt: 4500, transferAmt: 1200, monthlyPaid: 2000, otherAmt: 350, remarks: 'Setup fee', totalPending: 4500, remainingAmt: 1300 },
+      { date: '2026-02-02', month: 'Feb-2026', totalId: 102, workingAmt: 7800, transferAmt: 2400, monthlyPaid: 3000, otherAmt: 500, remarks: 'Upload complete', totalPending: 9100, remainingAmt: 3700 },
+      { date: '2026-03-10', month: 'Mar-2026', totalId: 103, workingAmt: 3200, transferAmt: 800, monthlyPaid: 1500, otherAmt: 0, remarks: 'Pending review', totalPending: 6900, remainingAmt: 4600 }
+    ];
+    demo.forEach(item => {
+      const rec = { ...item, id: generateId() };
+      records.push(rec);
+    });
+    renderTable();
+    updateStatus('📊 Demo data loaded');
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fDate').value = today;
+  
+  const monthSelect = document.getElementById('fMonth');
+  populateMonthDropdown(monthSelect, null, today);
+  
+  setTimeout(() => {
+    calculatePendingAndRemaining();
+    updateDashboard();
+    updateSyncStatus();
+    renderTable();
+    loadFromSheet({ silent: true });
+  }, 100);
+
+  // Expose to global
+  window.editRecord = editRecord;
+  window.deleteRecord = deleteRecord;
+  window.handleSave = handleSave;
+  window.resetFormAndClearSelection = resetFormAndClearSelection;
+  window.refreshTable = refreshTable;
+  window.calculatePendingAndRemaining = calculatePendingAndRemaining;
+  window.calculateRemaining = calculateRemaining;
+  window.exportExcel = exportExcel;
+  window.toggleForm = toggleForm;
+  window.closeForm = closeForm;
+  window.openFormForEdit = openFormForEdit;
+  window.loadFromSheet = loadFromSheet;
+  window.clearAllData = clearAllData;
+
+  console.log('✅ CRM with Google Sheet integration ready!');
+  console.log('📌 Web App URL:', GS_URL);
+</script>
+</body>
+</html>
