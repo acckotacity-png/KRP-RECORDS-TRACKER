@@ -83,13 +83,6 @@
     }
     .header-actions .btn-success i { color: white; }
     .header-actions .btn-success:hover { background: #2d9249; border-color: #2d9249; }
-    .header-actions .btn-google {
-      background: #4285f4;
-      border: 1px solid #4285f4;
-      color: white;
-    }
-    .header-actions .btn-google i { color: white; }
-    .header-actions .btn-google:hover { background: #3367d6; border-color: #3367d6; }
     .header-actions .btn-danger {
       background: #d93025;
       border: 1px solid #d93025;
@@ -189,6 +182,10 @@
       outline: none;
       border-color: #1a73e8;
       box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    }
+    .form-group input[type="text"].date-input {
+      font-family: 'Inter', monospace;
+      letter-spacing: 0.5px;
     }
     .form-actions {
       display: flex;
@@ -299,6 +296,11 @@
     .status-msg.error { background: #fce8e6; color: #b3261e; }
     .status-msg.loading { background: #fef7e0; color: #b06500; }
     .hidden-field { display: none !important; }
+    .date-hint {
+      font-size: 0.6rem;
+      color: #6c81a0;
+      margin-top: 2px;
+    }
     @media (max-width: 700px) {
       body { padding: 0.5rem; }
       .app-container { padding: 0.8rem; border-radius: 16px; }
@@ -375,11 +377,13 @@
     </div>
     <div class="form-grid" id="formGrid">
       <div class="form-group">
-        <label>DATE</label>
-        <input type="date" id="fDate" onchange="refreshMonthDropdownFromDate()" />
+        <label>DATE (DD-MM-YYYY) 🔒</label>
+        <input type="text" id="fDate" class="date-input" placeholder="DD-MM-YYYY" maxlength="10" 
+               oninput="formatDateInput(this)" onblur="validateDateInput(this)" />
+        <span class="date-hint">Format: DD-MM-YYYY (e.g., 15-01-2026)</span>
       </div>
       <div class="form-group">
-        <label>MONTH</label>
+        <label>MONTH (3 Months Back & Forward)</label>
         <select id="fMonth"></select>
       </div>
       <div class="form-group">
@@ -399,7 +403,7 @@
         <input type="number" step="0.01" id="fMonthlyPaid" placeholder="0.00" oninput="calculateRemaining()" />
       </div>
       <div class="form-group">
-        <label>OTHER AMT FROM SETUP AND UPLOADING</label>
+        <label>OTHER AMT</label>
         <input type="number" step="0.01" id="fOtherAmt" placeholder="0.00" />
       </div>
       <div class="form-group">
@@ -423,7 +427,7 @@
 
   <!-- TABLE -->
   <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; flex-wrap: wrap;">
-    <span style="font-weight: 500;"><i class="fas fa-list-ul" style="color: #1a73e8;"></i> All Records (<span id="rowCount">0</span>)</span>
+    <span style="font-weight: 500;"><i class="fas fa-list-ul" style="color: #1a73e8;"></i> All Records (Sorted by Date - Ascending) (<span id="rowCount">0</span>)</span>
     <span id="statusMessage" class="status-msg"><i class="fas fa-check-circle"></i> Ready</span>
   </div>
   <div class="table-wrapper">
@@ -457,8 +461,97 @@
   let nextId = 1;
   let editingRowId = null;
   let isSynced = false;
-  let callbackCounter = 0;
   let jsonpCounter = 0;
+
+  // ============================================================
+  // DATE INPUT FORMATTING - LOCKED TO DD-MM-YYYY
+  // ============================================================
+  function formatDateInput(input) {
+    // Remove all non-digit characters
+    let value = input.value.replace(/\D/g, '');
+    
+    // Limit to 8 digits (DDMMYYYY)
+    if (value.length > 8) {
+      value = value.slice(0, 8);
+    }
+    
+    // Format as DD-MM-YYYY
+    let formatted = '';
+    if (value.length > 0) {
+      formatted = value.slice(0, 2);
+      if (value.length > 2) {
+        formatted += '-' + value.slice(2, 4);
+      }
+      if (value.length > 4) {
+        formatted += '-' + value.slice(4, 8);
+      }
+    }
+    
+    input.value = formatted;
+  }
+
+  function validateDateInput(input) {
+    const value = input.value.trim();
+    if (!value) return true;
+    
+    // Check format DD-MM-YYYY
+    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!match) {
+      alert('⚠️ Invalid date format! Please use DD-MM-YYYY (e.g., 15-01-2026)');
+      input.focus();
+      return false;
+    }
+    
+    const day = parseInt(match[1]);
+    const month = parseInt(match[2]);
+    const year = parseInt(match[3]);
+    
+    // Validate day, month, year
+    if (month < 1 || month > 12) {
+      alert('⚠️ Invalid month! Please enter a month between 01 and 12.');
+      input.focus();
+      return false;
+    }
+    
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) {
+      alert(`⚠️ Invalid day! ${month}/${year} has ${daysInMonth} days.`);
+      input.focus();
+      return false;
+    }
+    
+    if (year < 1900 || year > 2100) {
+      alert('⚠️ Invalid year! Please enter a year between 1900 and 2100.');
+      input.focus();
+      return false;
+    }
+    
+    // Auto-update month dropdown based on date
+    refreshMonthDropdownFromDate();
+    return true;
+  }
+
+  function getDateFromInput(input) {
+    const value = input.value.trim();
+    if (!value) return null;
+    
+    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!match) return null;
+    
+    const day = parseInt(match[1]);
+    const month = parseInt(match[2]) - 1;
+    const year = parseInt(match[3]);
+    
+    return new Date(year, month, day);
+  }
+
+  function getTodayDateString() {
+    const today = new Date();
+    const day = pad2(today.getDate());
+    const month = pad2(today.getMonth() + 1);
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
 
   // ============================================================
   // LOAD FROM SHEET
@@ -478,7 +571,6 @@
           records.forEach(r => { if (r.id > maxId) maxId = r.id; });
           nextId = maxId + 1;
           isSynced = true;
-          updateSyncStatus();
           renderTable(true);
           if (!silent) {
             updateStatus('Loaded ' + records.length + ' records');
@@ -589,7 +681,7 @@
   }
 
   // ============================================================
-  // MONTH DROPDOWN
+  // MONTH DROPDOWN - 3 months back and 3 months forward
   // ============================================================
   function getMonthOptions(anchorDate = new Date()) {
     const baseDate = anchorDate instanceof Date ? anchorDate : new Date(anchorDate);
@@ -597,6 +689,7 @@
     const currentYear = validBase.getFullYear();
     const currentMonth = validBase.getMonth();
     const months = [];
+    
     for (let offset = -3; offset <= 3; offset++) {
       const d = new Date(currentYear, currentMonth + offset, 1);
       const year = d.getFullYear();
@@ -606,7 +699,8 @@
         label: `${monthName}-${year}`,
         value: `${monthName}-${year}`,
         year: year,
-        monthIndex: month
+        monthIndex: month,
+        dateObj: d
       });
     }
     return months;
@@ -614,7 +708,20 @@
 
   function populateMonthDropdown(selectElement, selectedValue, anchorDate = null) {
     if (!selectElement) return;
-    const options = getMonthOptions(anchorDate || document.getElementById('fDate').value || new Date());
+    const dateInput = document.getElementById('fDate');
+    let dateObj = null;
+    
+    if (anchorDate) {
+      dateObj = anchorDate;
+    } else if (dateInput && dateInput.value) {
+      dateObj = getDateFromInput(dateInput);
+    }
+    
+    if (!dateObj || isNaN(dateObj)) {
+      dateObj = new Date();
+    }
+    
+    const options = getMonthOptions(dateObj);
     selectElement.innerHTML = '';
     options.forEach(opt => {
       const option = document.createElement('option');
@@ -637,8 +744,10 @@
     const dateInput = document.getElementById('fDate');
     const monthSelect = document.getElementById('fMonth');
     if (!dateInput || !monthSelect) return;
+    
     const currentSelected = monthSelect.value || null;
-    populateMonthDropdown(monthSelect, currentSelected, dateInput.value || new Date());
+    const dateValue = getDateFromInput(dateInput);
+    populateMonthDropdown(monthSelect, currentSelected, dateValue);
   }
 
   // ============================================================
@@ -646,6 +755,80 @@
   // ============================================================
   function pad2(value) {
     return String(value).padStart(2, '0');
+  }
+
+  function formatDateForDisplay(value) {
+    if (!value) return '';
+    if (value instanceof Date && !isNaN(value)) {
+      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
+    }
+
+    const str = String(value).trim();
+    
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dmyMatch) {
+      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
+    }
+
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
+    }
+
+    const parsed = new Date(str);
+    if (!isNaN(parsed)) {
+      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
+    }
+
+    return str;
+  }
+
+  function formatDateForInput(value) {
+    if (!value) return '';
+    if (value instanceof Date && !isNaN(value)) {
+      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
+    }
+
+    const str = String(value).trim();
+    
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dmyMatch) {
+      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
+    }
+
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
+    }
+
+    const parsed = new Date(str);
+    if (!isNaN(parsed)) {
+      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
+    }
+
+    return '';
+  }
+
+  function formatDateForSheet(value) {
+    if (!value) return '';
+    const str = String(value).trim();
+    
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
+    }
+    
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dmyMatch) {
+      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
+    }
+    
+    const parsed = new Date(str);
+    if (!isNaN(parsed)) {
+      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
+    }
+    
+    return str;
   }
 
   function extractYear(value) {
@@ -686,9 +869,10 @@
     if (!value) return '';
 
     const str = String(value).trim();
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-      const d = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+    
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dmyMatch) {
+      const d = new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
       return d.toLocaleString('en-US', { month: 'short' }) + '-' + d.getFullYear();
     }
 
@@ -708,58 +892,6 @@
     return str;
   }
 
-  function formatDateForDisplay(value) {
-    if (!value) return '';
-    if (value instanceof Date && !isNaN(value)) {
-      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
-    }
-
-    const str = String(value).trim();
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
-    }
-
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
-    if (dmyMatch) {
-      const day = pad2(dmyMatch[1]);
-      const month = pad2(dmyMatch[2]);
-      const year = dmyMatch[3].length === 2 ? `20${dmyMatch[3]}` : dmyMatch[3];
-      return `${day}-${month}-${year}`;
-    }
-
-    return str;
-  }
-
-  function formatDateForInput(value) {
-    if (!value) return '';
-    if (value instanceof Date && !isNaN(value)) {
-      const year = value.getFullYear();
-      const month = pad2(value.getMonth() + 1);
-      const day = pad2(value.getDate());
-      return `${year}-${month}-${day}`;
-    }
-
-    const str = String(value).trim();
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) return str;
-
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
-    if (dmyMatch) {
-      const day = pad2(dmyMatch[1]);
-      const month = pad2(dmyMatch[2]);
-      const year = dmyMatch[3].length === 2 ? `20${dmyMatch[3]}` : dmyMatch[3];
-      return `${year}-${month}-${day}`;
-    }
-
-    const parsed = new Date(str);
-    if (!isNaN(parsed)) {
-      return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}-${pad2(parsed.getDate())}`;
-    }
-
-    return '';
-  }
-
   function toSafeNumber(value, fallback = 0) {
     const num = typeof value === 'number' ? value : parseFloat(value);
     return Number.isFinite(num) ? num : fallback;
@@ -770,20 +902,34 @@
     if (value instanceof Date && !isNaN(value)) return value.getTime();
 
     const str = String(value).trim();
+    
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dmyMatch) {
+      return new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1])).getTime();
+    }
+
     const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
       return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3])).getTime();
     }
 
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
-    if (dmyMatch) {
-      const year = dmyMatch[3].length === 2 ? Number(`20${dmyMatch[3]}`) : Number(dmyMatch[3]);
-      return new Date(year, Number(dmyMatch[2]) - 1, Number(dmyMatch[1])).getTime();
-    }
-
     const parsed = new Date(str);
     if (!isNaN(parsed)) return parsed.getTime();
     return null;
+  }
+
+  // ============================================================
+  // SORTING - Ascending order (oldest to newest)
+  // ============================================================
+  function sortByDateAsc(recordsList) {
+    return [...recordsList].sort((a, b) => {
+      const aTime = parseDateValue(a.date);
+      const bTime = parseDateValue(b.date);
+      if (aTime === null && bTime === null) return 0;
+      if (aTime === null) return 1;
+      if (bTime === null) return -1;
+      return aTime - bTime;
+    });
   }
 
   function sortByDateDesc(recordsList) {
@@ -794,17 +940,6 @@
       if (aTime === null) return 1;
       if (bTime === null) return -1;
       return bTime - aTime;
-    });
-  }
-
-  function sortByDateAsc(recordsList) {
-    return [...recordsList].sort((a, b) => {
-      const aTime = parseDateValue(a.date);
-      const bTime = parseDateValue(b.date);
-      if (aTime === null && bTime === null) return 0;
-      if (aTime === null) return 1;
-      if (bTime === null) return -1;
-      return aTime - bTime;
     });
   }
 
@@ -824,6 +959,9 @@
     };
   }
 
+  // ============================================================
+  // RECALCULATE DERIVED RECORDS - Date wise calculations
+  // ============================================================
   function recalculateDerivedRecords(recordsList) {
     const sorted = sortByDateAsc(recordsList.map(normalizeLoadedRecord));
     let previousRemaining = 0;
@@ -842,28 +980,43 @@
   }
 
   // ============================================================
-  // AUTO CALCULATION
+  // AUTO CALCULATION - Date wise previous remaining
   // ============================================================
-  function getPreviousRemaining() {
-    if (records.length === 0) return 0;
-    const sorted = sortByDateDesc(records);
-    const latest = sorted[0];
-    return latest.remainingAmt || 0;
+  function getPreviousRemainingForDate(targetDate, excludeId = null) {
+    const targetTime = parseDateValue(targetDate);
+    if (targetTime === null) return 0;
+    
+    let filteredRecords = [...records];
+    if (excludeId !== null) {
+      filteredRecords = filteredRecords.filter(r => r.id !== excludeId);
+    }
+    
+    const previousRecords = filteredRecords.filter(r => {
+      const rTime = parseDateValue(r.date);
+      return rTime !== null && rTime <= targetTime;
+    });
+    
+    if (previousRecords.length === 0) return 0;
+    
+    const sorted = sortByDateAsc(previousRecords);
+    const lastRecord = sorted[sorted.length - 1];
+    return lastRecord.remainingAmt || 0;
   }
 
   function calculatePendingAndRemaining() {
+    const dateInput = document.getElementById('fDate');
+    const date = dateInput ? dateInput.value : '';
     const workingAmt = parseFloat(document.getElementById('fWorkingAmt').value) || 0;
     const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
     const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
     
     let prevRemaining = 0;
-    if (editingRowId !== null) {
-      const sorted = sortByDateDesc([...records].filter(r => r.id !== editingRowId));
-      if (sorted.length > 0) {
-        prevRemaining = sorted[0].remainingAmt || 0;
+    if (date) {
+      if (editingRowId !== null) {
+        prevRemaining = getPreviousRemainingForDate(date, editingRowId);
+      } else {
+        prevRemaining = getPreviousRemainingForDate(date);
       }
-    } else {
-      prevRemaining = getPreviousRemaining();
     }
 
     const totalPending = workingAmt + prevRemaining;
@@ -916,19 +1069,21 @@
   }
 
   // ============================================================
-  // RENDER TABLE
+  // RENDER TABLE - Always show in ascending date order
   // ============================================================
   function renderTable(silent = false) {
+    const sortedRecords = sortByDateAsc(records);
+    
     const tbody = document.getElementById('tableBody');
     const rowCountSpan = document.getElementById('rowCount');
-    if (!records.length) {
+    if (!sortedRecords.length) {
       tbody.innerHTML = `<tr class="empty-row"><td colspan="12">📭 No records yet. Add a new entry above.</td></tr>`;
       rowCountSpan.textContent = '0';
       updateDashboard();
       return;
     }
     let html = '';
-    records.forEach((rec, index) => {
+    sortedRecords.forEach((rec, index) => {
       const realIndex = index + 1;
       html += `<tr>
         <td><span class="badge-id">${realIndex}</span></td>
@@ -951,10 +1106,10 @@
       </tr>`;
     });
     tbody.innerHTML = html;
-    rowCountSpan.textContent = records.length;
+    rowCountSpan.textContent = sortedRecords.length;
     updateDashboard();
     if (!silent) {
-      updateStatus('✅ Loaded ' + records.length + ' records');
+      updateStatus('✅ Loaded ' + sortedRecords.length + ' records');
     }
   }
 
@@ -964,7 +1119,12 @@
   function generateId() { return nextId++; }
 
   function handleSave() {
-    const date = document.getElementById('fDate').value;
+    const dateInput = document.getElementById('fDate');
+    if (!validateDateInput(dateInput)) {
+      return;
+    }
+    
+    const date = dateInput.value;
     const monthSelect = document.getElementById('fMonth');
     const month = formatMonthForDisplay(monthSelect.value, date);
     const totalId = parseFloat(document.getElementById('fTotalId').value) || 0;
@@ -981,17 +1141,32 @@
       return;
     }
 
+    const formattedDate = formatDateForDisplay(date);
+    const sheetDate = formatDateForSheet(date);
+
     const newRecord = {
-      date: formatDateForDisplay(date), month, totalId, workingAmt, transferAmt, monthlyPaid, otherAmt,
-      remarks, totalPending, remainingAmt
+      date: formattedDate,
+      month: month,
+      totalId: totalId,
+      workingAmt: workingAmt,
+      transferAmt: transferAmt,
+      monthlyPaid: monthlyPaid,
+      otherAmt: otherAmt,
+      remarks: remarks,
+      totalPending: totalPending,
+      remainingAmt: remainingAmt
     };
 
     if (editingRowId !== null) {
       const index = records.findIndex(r => r.id === editingRowId);
       if (index !== -1) {
+        newRecord.date = formattedDate;
+        newRecord.id = editingRowId;
         records[index] = { ...records[index], ...newRecord };
+        records = recalculateDerivedRecords(records);
         updateStatus('✏️ Record updated locally');
-        updateRecordInSheet(editingRowId, newRecord);
+        const updateData = { ...newRecord, date: sheetDate };
+        updateRecordInSheet(editingRowId, updateData);
       } else {
         alert('Error: record not found.');
         resetFormAndClearSelection();
@@ -1002,8 +1177,10 @@
       const newId = generateId();
       newRecord.id = newId;
       records.push(newRecord);
+      records = recalculateDerivedRecords(records);
       updateStatus('➕ New record added locally');
-      saveRecordToSheet(newRecord);
+      const saveData = { ...newRecord, date: sheetDate };
+      saveRecordToSheet(saveData);
     }
 
     closeForm();
@@ -1014,9 +1191,12 @@
   function editRecord(id) {
     const rec = records.find(r => r.id === id);
     if (!rec) return;
+    
     document.getElementById('fDate').value = formatDateForInput(rec.date);
+    
     const monthSelect = document.getElementById('fMonth');
-    populateMonthDropdown(monthSelect, formatMonthForDisplay(rec.month, rec.date) || null, rec.date || document.getElementById('fDate').value);
+    const dateObj = getDateFromInput(document.getElementById('fDate'));
+    populateMonthDropdown(monthSelect, formatMonthForDisplay(rec.month, rec.date) || null, dateObj);
     document.getElementById('fTotalId').value = rec.totalId || '';
     document.getElementById('fWorkingAmt').value = rec.workingAmt ?? '';
     document.getElementById('fTransferAmt').value = rec.transferAmt ?? '';
@@ -1043,6 +1223,8 @@
     
     deleteRecordFromSheet(id);
     records = records.filter(r => r.id !== id);
+    records = recalculateDerivedRecords(records);
+    
     if (editingRowId === id) resetFormAndClearSelection();
     renderTable();
     updateStatus('🗑️ Deleted record ID: ' + id);
@@ -1085,10 +1267,6 @@
       });
   }
 
-  function syncToSheet() {
-    loadFromSheet();
-  }
-
   function clearAllData() {
     if (!confirm('⚠️ This will delete ALL data from the sheet. Are you sure?')) return;
     if (!confirm('⚠️ Final confirmation: This cannot be undone!')) return;
@@ -1110,11 +1288,12 @@
   // HELPER FUNCTIONS
   // ============================================================
   function resetFormAndClearSelection() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('fDate').value = today;
+    const todayStr = getTodayDateString();
+    document.getElementById('fDate').value = todayStr;
     
+    const dateObj = getDateFromInput(document.getElementById('fDate'));
     const monthSelect = document.getElementById('fMonth');
-    populateMonthDropdown(monthSelect, null, today);
+    populateMonthDropdown(monthSelect, null, dateObj);
     document.getElementById('fTotalId').value = '';
     document.getElementById('fWorkingAmt').value = '';
     document.getElementById('fTransferAmt').value = '';
@@ -1165,7 +1344,9 @@
       return;
     }
 
-    const excelData = records.map((rec, index) => ({
+    const sortedRecords = sortByDateAsc(records);
+    
+    const excelData = sortedRecords.map((rec, index) => ({
       '#': index + 1,
       'DATE': rec.date || '',
       'MONTH': rec.month || '',
@@ -1180,7 +1361,7 @@
     }));
 
     let totalId = 0, working = 0, transfer = 0, monthlyPaid = 0, other = 0, totalPending = 0, remaining = 0;
-    records.forEach(r => {
+    sortedRecords.forEach(r => {
       totalId += r.totalId || 0;
       working += r.workingAmt || 0;
       transfer += r.transferAmt || 0;
@@ -1228,26 +1409,35 @@
   // ============================================================
   function seedDemoData() {
     const demo = [
-      { date: '2026-01-15', month: 'Jan-2026', totalId: 101, workingAmt: 4500, transferAmt: 1200, monthlyPaid: 2000, otherAmt: 350, remarks: 'Setup fee', totalPending: 4500, remainingAmt: 1300 },
-      { date: '2026-02-02', month: 'Feb-2026', totalId: 102, workingAmt: 7800, transferAmt: 2400, monthlyPaid: 3000, otherAmt: 500, remarks: 'Upload complete', totalPending: 9100, remainingAmt: 3700 },
-      { date: '2026-03-10', month: 'Mar-2026', totalId: 103, workingAmt: 3200, transferAmt: 800, monthlyPaid: 1500, otherAmt: 0, remarks: 'Pending review', totalPending: 6900, remainingAmt: 4600 }
+      { date: '15-01-2026', month: 'Jan-2026', totalId: 101, workingAmt: 4500, transferAmt: 1200, monthlyPaid: 2000, otherAmt: 350, remarks: 'Setup fee' },
+      { date: '02-02-2026', month: 'Feb-2026', totalId: 102, workingAmt: 7800, transferAmt: 2400, monthlyPaid: 3000, otherAmt: 500, remarks: 'Upload complete' },
+      { date: '10-03-2026', month: 'Mar-2026', totalId: 103, workingAmt: 3200, transferAmt: 800, monthlyPaid: 1500, otherAmt: 0, remarks: 'Pending review' }
     ];
+    
     demo.forEach(item => {
-      const rec = { ...item, id: generateId() };
+      const rec = { 
+        ...item, 
+        id: generateId(),
+        totalPending: 0,
+        remainingAmt: 0
+      };
       records.push(rec);
     });
+    
+    records = recalculateDerivedRecords(records);
     renderTable();
-    updateStatus('📊 Demo data loaded');
+    updateStatus('📊 Demo data loaded with date-wise calculations');
   }
 
   // ============================================================
   // INIT
   // ============================================================
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('fDate').value = today;
+  const todayStr = getTodayDateString();
+  document.getElementById('fDate').value = todayStr;
   
+  const dateObj = getDateFromInput(document.getElementById('fDate'));
   const monthSelect = document.getElementById('fMonth');
-  populateMonthDropdown(monthSelect, null, today);
+  populateMonthDropdown(monthSelect, null, dateObj);
   
   setTimeout(() => {
     calculatePendingAndRemaining();
@@ -1271,9 +1461,14 @@
   window.openFormForEdit = openFormForEdit;
   window.loadFromSheet = loadFromSheet;
   window.clearAllData = clearAllData;
+  window.formatDateInput = formatDateInput;
+  window.validateDateInput = validateDateInput;
 
   console.log('✅ CRM with Google Sheet integration ready!');
   console.log('📌 Web App URL:', GS_URL);
+  console.log('📅 Date format: DD-MM-YYYY (LOCKED)');
+  console.log('📊 Records sorted by date: Ascending (oldest to newest)');
+  console.log('📆 Month dropdown: 3 months back and 3 months forward');
 </script>
 </body>
 </html>
