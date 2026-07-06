@@ -12,7 +12,7 @@
     body {
       background: #f4f7fc;
       font-family: 'Inter', sans-serif;
-      padding: 1rem;
+      padding: 0.75rem;
       color: #1e293b;
       overflow-x: hidden;
     }
@@ -20,92 +20,94 @@
       max-width: 1220px;
       margin: 0 auto;
       background: white;
-      border-radius: 20px;
-      box-shadow: 0 14px 28px -16px rgba(0,0,0,0.18);
-      padding: 1rem 1rem 1.25rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -10px rgba(0,0,0,0.1);
+      padding: 1rem;
     }
     .crm-header {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 12px;
       margin-bottom: 1rem;
       border-bottom: 1px solid #e9eef3;
       padding-bottom: 0.8rem;
     }
+    @media (min-width: 768px) {
+      .crm-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
     .crm-header h1 {
       font-weight: 700;
-      font-size: 1.45rem;
+      font-size: 1.35rem;
       letter-spacing: -0.02em;
       display: flex;
       align-items: center;
       gap: 10px;
       color: #0b2b4a;
     }
-    .crm-header h1 i { color: #1a73e8; font-size: 1.5rem; }
+    .crm-header h1 i { color: #1a73e8; font-size: 1.4rem; }
     .header-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
     }
     .header-actions button {
-      background: white;
+      flex: 1 1 auto;
+      background: #fafcfd;
       border: 1px solid #d0d9e6;
-      padding: 0.45rem 0.8rem;
-      border-radius: 14px;
+      padding: 0.55rem 0.8rem;
+      border-radius: 10px;
       font-weight: 500;
       font-size: 0.8rem;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       color: #1e293b;
       cursor: pointer;
       transition: 0.15s;
-      background: #fafcfd;
     }
     .header-actions button i { color: #1a73e8; }
     .header-actions button:hover {
       background: #eef3f9;
       border-color: #a5b9d0;
-      transform: scale(0.97);
     }
-    .header-actions .btn-primary {
-      background: #1a73e8;
-      border: 1px solid #1a73e8;
-      color: white;
-    }
+    .header-actions .btn-primary { background: #1a73e8; border-color: #1a73e8; color: white; }
     .header-actions .btn-primary i { color: white; }
-    .header-actions .btn-primary:hover { background: #1557b0; border-color: #1557b0; }
-    .header-actions .btn-success {
-      background: #34a853;
-      border: 1px solid #34a853;
-      color: white;
-    }
+    .header-actions .btn-primary:hover { background: #1557b0; }
+    
+    .header-actions .btn-success { background: #34a853; border-color: #34a853; color: white; }
     .header-actions .btn-success i { color: white; }
-    .header-actions .btn-success:hover { background: #2d9249; border-color: #2d9249; }
-    .header-actions .btn-danger {
-      background: #d93025;
-      border: 1px solid #d93025;
-      color: white;
-    }
+    .header-actions .btn-success:hover { background: #2d9249; }
+    
+    .header-actions .btn-danger { background: #d93025; border-color: #d93025; color: white; }
     .header-actions .btn-danger i { color: white; }
-    .header-actions .btn-danger:hover { background: #b3261e; border-color: #b3261e; }
+    .header-actions .btn-danger:hover { background: #b3261e; }
 
     .dashboard {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
       margin-bottom: 1rem;
       background: #f8faff;
-      padding: 0.8rem;
-      border-radius: 16px;
+      padding: 0.75rem;
+      border-radius: 12px;
       border: 1px solid #e2e9f2;
+    }
+    @media (min-width: 600px) {
+      .dashboard { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 900px) {
+      .dashboard { grid-template-columns: repeat(6, 1fr); }
     }
     .dash-card {
       background: white;
-      padding: 0.65rem 0.8rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      padding: 0.6rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
       border: 1px solid #eef3f9;
       text-align: center;
     }
@@ -113,217 +115,228 @@
       font-size: 0.6rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
       color: #6c81a0;
       margin-bottom: 4px;
     }
     .dash-card .dash-value {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #0b2b4a;
+      word-break: break-all;
     }
-    .dash-card .dash-value.month { font-size: 1.1rem; color: #1a73e8; }
+    .dash-card .dash-value.month { color: #1a73e8; }
     .dash-card.highlight { background: #e8f0fe; border-color: #1a73e8; }
     .dash-card.highlight .dash-value { color: #1a5fb0; }
-    .dash-card.success { background: #e6f4ea; border-color: #34a853; }
+    .dash-card.success { background: #e6f4ea; border-color: #34a853; grid-column: span 2; }
+    @media (min-width: 900px) { .dash-card.success { grid-column: auto; } }
     .dash-card.success .dash-value { color: #1e7e34; }
 
+    /* Entry Panel Form Overlay */
     .data-entry-panel {
       position: fixed;
-      top: 92px;
+      top: 10px;
       left: 50%;
-      transform: translateX(-50%) scale(0.98);
-      width: min(980px, calc(100vw - 24px));
-      max-height: calc(100vh - 120px);
-      overflow: auto;
-      background: #f8faff;
-      border-radius: 18px;
-      padding: 1rem 1rem 1.1rem;
-      border: 1px solid #e2e9f2;
-      box-shadow: 0 4px 10px rgba(0, 20, 40, 0.02);
+      transform: translateX(-50%);
+      width: calc(100vw - 20px);
+      max-width: 750px;
+      max-height: calc(100vh - 20px);
+      overflow-y: auto;
+      background: white;
+      border-radius: 14px;
+      padding: 1.2rem 1rem;
+      border: 1px solid #bce;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
       display: none;
-      z-index: 999;
+      z-index: 1000;
     }
-    .data-entry-panel.show {
-      display: block;
-      transform: translateX(-50%) scale(1);
-      box-shadow: 0 24px 60px rgba(11, 43, 74, 0.22);
-    }
+    .data-entry-panel.show { display: block; }
+    
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 10px 12px;
-      align-items: end;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 480px) {
+      .form-grid { grid-template-columns: 1fr; }
     }
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
     }
     .form-group label {
-      font-size: 0.62rem;
+      font-size: 0.65rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
       color: #556b82;
     }
     .form-group input, .form-group select {
-      background: white;
+      background: #fafafa;
       border: 1px solid #dce3ec;
-      border-radius: 12px;
-      padding: 0.5rem 0.7rem;
-      font-size: 0.82rem;
-      font-family: 'Inter', sans-serif;
-      transition: 0.15s;
+      border-radius: 10px;
+      padding: 0.65rem;
+      font-size: 0.85rem;
+      font-family: inherit;
       width: 100%;
-      appearance: auto;
     }
     .form-group input:focus, .form-group select:focus {
       outline: none;
       border-color: #1a73e8;
-      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
-    }
-    .form-group input[type="text"].date-input {
-      font-family: 'Inter', monospace;
-      letter-spacing: 0.5px;
+      background: white;
     }
     .form-actions {
       display: flex;
       gap: 8px;
-      align-items: center;
-      margin-top: 12px;
-      flex-wrap: wrap;
+      margin-top: 15px;
       justify-content: flex-end;
     }
     .form-actions button {
-      padding: 0.55rem 1.1rem;
-      border-radius: 12px;
+      padding: 0.65rem 1.2rem;
+      border-radius: 10px;
       border: none;
       font-weight: 500;
-      font-size: 0.82rem;
-      background: #e9eff6;
-      color: #1e293b;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 0.85rem;
       cursor: pointer;
-      transition: 0.15s;
     }
     .form-actions .btn-save { background: #1a73e8; color: white; }
-    .form-actions .btn-save:hover { background: #1557b0; }
-    .form-actions .btn-cancel { background: #eef2f7; border: 1px solid #d0d9e6; }
-    .form-actions .btn-cancel:hover { background: #e2e9f2; }
+    .form-actions .btn-cancel { background: #eef2f7; border: 1px solid #ccc; color: #333; }
 
+    /* Table Wrapper Layout */
     .table-wrapper {
       overflow-x: auto;
-      border-radius: 14px;
+      border-radius: 12px;
       border: 1px solid #e6edf5;
       background: white;
       margin-top: 0.5rem;
+      -webkit-overflow-scrolling: touch;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.76rem;
-      min-width: 1100px; /* Thoda width badha diya taaki saare columns sahi se aayein */
+      font-size: 0.78rem;
+      min-width: 1100px;
       table-layout: fixed;
     }
     th {
       background: #f2f7fe;
       color: #1e3a5f;
       font-weight: 600;
-      padding: 0.62rem 0.5rem;
+      padding: 0.75rem 0.5rem;
       text-align: left;
-      white-space: normal;
       border-bottom: 2px solid #dce3ec;
     }
     td {
-      padding: 0.5rem 0.5rem;
+      padding: 0.65rem 0.5rem;
       border-bottom: 1px solid #edf2f8;
       vertical-align: middle;
       background-color: white;
       word-break: break-word;
     }
-    tr:last-child td { border-bottom: none; }
     tr:hover td { background: #f9fcff; }
-    .col-actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .col-actions button {
-      background: transparent;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 10px;
-      font-size: 0.72rem;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+    
+    /* Month Clickable Link */
+    .month-link {
+      color: #1a73e8;
+      font-weight: 600;
       cursor: pointer;
-      transition: 0.1s;
-      border: 1px solid transparent;
+      text-decoration: underline;
+      display: inline-block;
+    }
+    .month-link:hover {
+      color: #114994;
+    }
+
+    /* OVERLAP POPUP LEDGER STYLES */
+    .overlap-ledger-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(11, 43, 74, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    .overlap-ledger-modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 1000px;
+      max-height: calc(100vh - 40px);
+      border-radius: 16px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: popIn 0.2s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 1rem;
+      background: #0b2b4a;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h2 { font-size: 1.15rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .modal-header .close-modal {
+      background: transparent; border: none; color: white; font-size: 1.35rem; cursor: pointer; opacity: 0.8;
+    }
+    .modal-header .close-modal:hover { opacity: 1; }
+    .modal-body {
+      padding: 1rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    @media (min-width: 600px) {
+      .modal-summary-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+    .m-card {
+      background: #f4f7fc; border: 1px solid #e2e9f2; padding: 0.5rem; border-radius: 8px; text-align: center;
+    }
+    .m-card .m-label { font-size: 0.58rem; font-weight: 600; text-transform: uppercase; color: #6c81a0; margin-bottom: 2px; }
+    .m-card .m-value { font-size: 0.88rem; font-weight: 700; color: #0b2b4a; }
+    .m-card.m-sec { background: #e8f0fe; border-color: #1a73e8; }
+    .m-card.m-sec .m-value { color: #1a5fb0; }
+
+    .col-actions { display: flex; gap: 4px; }
+    .col-actions button {
+      border: none; padding: 5px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 500; cursor: pointer;
     }
     .col-actions .edit-btn { color: #1a5fb0; background: #e9f0fe; }
-    .col-actions .edit-btn:hover { background: #d4e2fc; }
     .col-actions .delete-btn { color: #b3261e; background: #fde8e6; }
-    .col-actions .delete-btn:hover { background: #fcd3d0; }
-    .badge-id {
-      font-family: monospace;
-      background: #eef3f9;
-      padding: 2px 10px;
-      border-radius: 40px;
-      font-weight: 500;
-      font-size: 0.8rem;
-      display: inline-block;
-    }
-    .empty-row td {
-      padding: 2.5rem;
-      text-align: center;
-      color: #6c81a0;
-      font-style: italic;
-    }
+    
+    .badge-id { font-family: monospace; background: #eef3f9; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+    .empty-row td { padding: 2.5rem; text-align: center; color: #6c81a0; }
     .status-msg {
-      font-size: 0.85rem;
-      color: #1e6f3f;
-      background: #e3f5eb;
-      padding: 0.3rem 1rem;
-      border-radius: 40px;
-      display: inline-block;
+      font-size: 0.78rem; color: #1e6f3f; background: #e3f5eb; padding: 0.3rem 0.8rem; border-radius: 20px; display: inline-block;
     }
-    .status-msg i { margin-right: 6px; }
     .status-msg.error { background: #fce8e6; color: #b3261e; }
     .status-msg.loading { background: #fef7e0; color: #b06500; }
     .hidden-field { display: none !important; }
-    .date-hint {
-      font-size: 0.6rem;
-      color: #6c81a0;
-      margin-top: 2px;
-    }
-    
-    /* Responsive Styles - Hiding columns rules removed to keep Remarks visible always */
-    @media (max-width: 700px) {
-      body { padding: 0.5rem; }
-      .app-container { padding: 0.8rem; border-radius: 16px; }
-      .crm-header { flex-direction: column; align-items: start; gap: 10px; }
-      .form-grid { grid-template-columns: 1fr 1fr; }
-      .dashboard { grid-template-columns: 1fr 1fr; }
-      .data-entry-panel {
-        top: 64px;
-        width: calc(100vw - 12px);
-        max-height: calc(100vh - 80px);
-      }
-    }
+    .date-hint { font-size: 0.58rem; color: #6c81a0; }
   </style>
 </head>
 <body>
 
 <div class="app-container" id="app">
   <div class="crm-header">
-    <h1><i class="fas fa-cloud"></i> CRM · Google Sheet</h1>
+    <h1><i class="fas fa-cloud"></i> CRM · Ledger</h1>
     <div class="header-actions">
-      <button onclick="exportExcel()" class="btn-success"><i class="fas fa-file-excel"></i> Export Excel</button>
+      <button onclick="exportExcel()" class="btn-success"><i class="fas fa-file-excel"></i> Export</button>
       <button onclick="clearAllData()" class="btn-danger"><i class="fas fa-trash-alt"></i> Clear All</button>
       <button onclick="refreshTable()"><i class="fas fa-sync-alt"></i> Refresh</button>
       <button class="btn-primary" onclick="toggleForm()"><i class="fas fa-plus-circle"></i> <span id="toggleBtnText">New Entry</span></button>
@@ -332,7 +345,7 @@
 
   <div class="dashboard" id="dashboard">
     <div class="dash-card highlight">
-      <div class="dash-label"><i class="fas fa-calendar-alt"></i> Total Months</div>
+      <div class="dash-label"><i class="fas fa-calendar-alt"></i> Months</div>
       <div class="dash-value month" id="dashMonths">0</div>
     </div>
     <div class="dash-card">
@@ -340,15 +353,15 @@
       <div class="dash-value" id="dashTotalId">0</div>
     </div>
     <div class="dash-card">
-      <div class="dash-label"><i class="fas fa-money-bill-wave"></i> Working Amount</div>
+      <div class="dash-label">Working Amt</div>
       <div class="dash-value" id="dashWorking">₹0</div>
     </div>
     <div class="dash-card">
-      <div class="dash-label"><i class="fas fa-exchange-alt"></i> Transfer Amt</div>
+      <div class="dash-label">Transfer Amt</div>
       <div class="dash-value" id="dashTransfer">₹0</div>
     </div>
     <div class="dash-card">
-      <div class="dash-label"><i class="fas fa-hand-holding-usd"></i> Monthly Paid</div>
+      <div class="dash-label">Monthly Paid</div>
       <div class="dash-value" id="dashMonthlyPaid">₹0</div>
     </div>
     <div class="dash-card success">
@@ -358,24 +371,23 @@
   </div>
 
   <div class="data-entry-panel" id="entryPanel">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-      <span style="font-weight: 500; font-size: 1rem;"><i class="fas fa-pen-fancy" style="color:#1a73e8; margin-right: 8px;"></i><span id="formTitle">Add New Record</span></span>
-      <span id="editRowId" style="background: #e9eff6; padding: 0.2rem 1rem; border-radius: 40px; font-size: 0.8rem; display: none;">Editing Row: <span id="editIdDisplay"></span></span>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 6px;">
+      <span style="font-weight: 600; font-size: 0.95rem;" id="formTitle"><i class="fas fa-plus-circle" style="color:#1a73e8; margin-right: 6px;"></i>Add New Record</span>
+      <span id="editRowId" style="background: #e9eff6; padding: 0.15rem 0.6rem; border-radius: 10px; font-size: 0.75rem; display: none;">ID: <span id="editIdDisplay"></span></span>
     </div>
-    <div class="form-grid" id="formGrid">
+    <div class="form-grid">
       <div class="form-group">
         <label>DATE (DD-MM-YYYY) 🔒</label>
-        <input type="text" id="fDate" class="date-input" placeholder="DD-MM-YYYY" maxlength="10" 
-               oninput="formatDateInput(this)" onblur="validateDateInput(this)" />
-        <span class="date-hint">Format: DD-MM-YYYY (e.g., 15-01-2026)</span>
+        <input type="text" id="fDate" class="date-input" placeholder="DD-MM-YYYY" maxlength="10" oninput="formatDateInput(this)" onblur="validateDateInput(this)" />
+        <span class="date-hint">Format: DD-MM-YYYY</span>
       </div>
       <div class="form-group">
-        <label>MONTH (3 Months Back & Forward)</label>
+        <label>MONTH</label>
         <select id="fMonth"></select>
       </div>
       <div class="form-group">
         <label>TOTAL ID</label>
-        <input type="number" id="fTotalId" placeholder="ID" />
+        <input type="number" id="fTotalId" placeholder="0" />
       </div>
       <div class="form-group">
         <label>WORKING AMOUNT</label>
@@ -395,7 +407,7 @@
       </div>
       <div class="form-group">
         <label>REMARKS</label>
-        <input type="text" id="fRemarks" placeholder="remarks" />
+        <input type="text" id="fRemarks" placeholder="Remarks text..." />
       </div>
       <div class="form-group hidden-field">
         <label>TOTAL PENDING AMT</label>
@@ -408,25 +420,31 @@
     </div>
     <div class="form-actions">
       <button class="btn-save" id="saveBtn" onclick="handleSave()"><i class="fas fa-save"></i> Save</button>
-      <button class="btn-cancel" onclick="closeForm()"><i class="fas fa-times"></i> Cancel</button>
+      <button class="btn-cancel" onclick="closeForm()">Cancel</button>
     </div>
   </div>
 
-  <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; flex-wrap: wrap;">
-    <span style="font-weight: 500;"><i class="fas fa-list-ul" style="color: #1a73e8;"></i> All Records (Sorted by Date - Ascending) (<span id="rowCount">0</span>)</span>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 6px;">
+    <span style="font-weight: 600; font-size: 0.85rem;"><i class="fas fa-list-ul" style="color: #1a73e8;"></i> Ledger List (<span id="rowCount">0</span>)</span>
     <span id="statusMessage" class="status-msg"><i class="fas fa-check-circle"></i> Ready</span>
   </div>
+
   <div class="table-wrapper">
     <table id="dataTable">
       <thead>
         <tr>
           <th style="width: 50px;">#</th>
-          <th>DATE</th><th>MONTH</th><th>TOTAL ID</th>
-          <th>WORKING AMOUNT</th><th>TRANSFER AMT</th><th>MONTHLY PAID AMT</th>
-          <th>OTHER AMT</th><th style="width: 150px;">REMARKS</th>
-          <th style="background:#e8f0fe; color:#1a5fb0;">TOTAL PENDING</th>
-          <th style="background:#e8f0fe; color:#1a5fb0;">REMAINING</th>
-          <th style="min-width:130px;">ACTIONS</th>
+          <th style="width: 100px;">DATE</th>
+          <th style="width: 110px;">MONTH 🔗</th>
+          <th style="width: 80px;">TOTAL ID</th>
+          <th style="width: 120px;">WORKING AMT</th>
+          <th style="width: 110px;">TRANSFER AMT</th>
+          <th style="width: 120px;">MONTHLY PAID</th>
+          <th style="width: 100px;">OTHER AMT</th>
+          <th style="width: 160px; background: #fffcf0; color: #b06500;">REMARKS</th>
+          <th style="width: 130px; background:#e8f0fe; color:#1a5fb0;">TOTAL PENDING</th>
+          <th style="width: 120px; background:#e8f0fe; color:#1a5fb0;">REMAINING</th>
+          <th style="width: 130px;">ACTIONS</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
@@ -434,15 +452,61 @@
   </div>
 </div>
 
+<div class="overlap-ledger-modal" id="overlapMonthLedger">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2><i class="fas fa-folder-open"></i> Month Ledger View (<span id="mViewTitle">Month-Year</span>)</h2>
+      <button class="close-modal" onclick="closeMonthLedger()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-summary-grid">
+        <div class="m-card">
+          <div class="m-label">Total ID</div>
+          <div class="m-value" id="mTotalId">0</div>
+        </div>
+        <div class="m-card">
+          <div class="m-label">Working Amt</div>
+          <div class="m-value" id="mWorking">₹0</div>
+        </div>
+        <div class="m-card">
+          <div class="m-label">Transfer Amt</div>
+          <div class="m-value" id="mTransfer">₹0</div>
+        </div>
+        <div class="m-card">
+          <div class="m-label">Monthly Paid</div>
+          <div class="m-value" id="mPaid">₹0</div>
+        </div>
+        <div class="m-card m-sec">
+          <div class="m-label">Remaining Bal</div>
+          <div class="m-value" id="mRemaining">₹0</div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 90px;">DATE</th>
+              <th style="width: 70px;">TOTAL ID</th>
+              <th style="width: 110px;">WORKING AMT</th>
+              <th style="width: 110px;">TRANSFER AMT</th>
+              <th style="width: 110px;">MONTHLY PAID</th>
+              <th style="width: 150px;">REMARKS</th>
+              <th style="width: 110px; background:#e8f0fe; color:#1a5fb0;">REMAINING</th>
+            </tr>
+          </thead>
+          <tbody id="modalTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // ============================================================
-  // CONFIGURATION - YOUR GOOGLE APPS SCRIPT WEB APP URL
+  // CONFIGURATION - GOOGLE APPS SCRIPT WEB APP URL
   // ============================================================
   const GS_URL = 'https://script.google.com/macros/s/AKfycbzQUhcHjPzSfmR4V7yjM7yCy5eT2S5NGNOoVb6QXW1EWyLJABgQLuR9PqbX3p9xIEF2-g/exec';
 
-  // ============================================================
-  // GLOBALS
-  // ============================================================
   let records = [];
   let nextId = 1;
   let editingRowId = null;
@@ -450,22 +514,16 @@
   let jsonpCounter = 0;
 
   // ============================================================
-  // DATE INPUT FORMATTING - LOCKED TO DD-MM-YYYY
+  // DATE CONTROLS
   // ============================================================
   function formatDateInput(input) {
     let value = input.value.replace(/\D/g, '');
-    if (value.length > 8) {
-      value = value.slice(0, 8);
-    }
+    if (value.length > 8) value = value.slice(0, 8);
     let formatted = '';
     if (value.length > 0) {
       formatted = value.slice(0, 2);
-      if (value.length > 2) {
-        formatted += '-' + value.slice(2, 4);
-      }
-      if (value.length > 4) {
-        formatted += '-' + value.slice(4, 8);
-      }
+      if (value.length > 2) formatted += '-' + value.slice(2, 4);
+      if (value.length > 4) formatted += '-' + value.slice(4, 8);
     }
     input.value = formatted;
   }
@@ -473,37 +531,12 @@
   function validateDateInput(input) {
     const value = input.value.trim();
     if (!value) return true;
-    
     const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if (!match) {
-      alert('⚠️ Invalid date format! Please use DD-MM-YYYY (e.g., 15-01-2026)');
-      input.focus();
-      return false;
-    }
-    
-    const day = parseInt(match[1]);
-    const month = parseInt(match[2]);
-    const year = parseInt(match[3]);
-    
-    if (month < 1 || month > 12) {
-      alert('⚠️ Invalid month! Please enter a month between 01 and 12.');
-      input.focus();
-      return false;
-    }
-    
+    if (!match) { alert('⚠️ Format error! Use DD-MM-YYYY'); input.focus(); return false; }
+    const day = parseInt(match[1]), month = parseInt(match[2]), year = parseInt(match[3]);
+    if (month < 1 || month > 12) { alert('⚠️ Month must be 01-12'); input.focus(); return false; }
     const daysInMonth = new Date(year, month, 0).getDate();
-    if (day < 1 || day > daysInMonth) {
-      alert(`⚠️ Invalid day! ${month}/${year} has ${daysInMonth} days.`);
-      input.focus();
-      return false;
-    }
-    
-    if (year < 1900 || year > 2100) {
-      alert('⚠️ Invalid year! Please enter a year between 1900 and 2100.');
-      input.focus();
-      return false;
-    }
-    
+    if (day < 1 || day > daysInMonth) { alert(`⚠️ Day error for this month`); input.focus(); return false; }
     refreshMonthDropdownFromDate();
     return true;
   }
@@ -513,28 +546,77 @@
     if (!value) return null;
     const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
     if (!match) return null;
-    const day = parseInt(match[1]);
-    const month = parseInt(match[2]) - 1;
-    const year = parseInt(match[3]);
-    return new Date(year, month, day);
+    return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
   }
 
   function getTodayDateString() {
     const today = new Date();
-    const day = pad2(today.getDate());
-    const month = pad2(today.getMonth() + 1);
-    const year = today.getFullYear();
-    return `${day}-${month}-${year}`;
+    return `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
   }
 
   // ============================================================
-  // LOAD FROM SHEET
+  // OVERLAP POPUP LEDGER HANDLERS
+  // ============================================================
+  function openMonthLedger(selectedMonthName) {
+    const modal = document.getElementById('overlapMonthLedger');
+    document.getElementById('mViewTitle').textContent = selectedMonthName;
+    
+    // Filter rows of selected month
+    const monthRows = records.filter(r => r.month === selectedMonthName);
+    const sortedMonthRows = sortByDateAsc(monthRows);
+    
+    let tId = 0, wk = 0, tf = 0, mp = 0, rem = 0;
+    let html = '';
+    
+    if (sortedMonthRows.length === 0) {
+      html = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#6c81a0;">No entries found for this month.</td></tr>`;
+    } else {
+      sortedMonthRows.forEach(r => {
+        tId += r.totalId;
+        wk += r.workingAmt;
+        tf += r.transferAmt;
+        mp += r.monthlyPaid;
+        rem = r.remainingAmt; // Last entry holds running balance
+        
+        html += `<tr>
+          <td>${r.date}</td>
+          <td>${r.totalId}</td>
+          <td>₹${r.workingAmt.toFixed(2)}</td>
+          <td>₹${r.transferAmt.toFixed(2)}</td>
+          <td>₹${r.monthlyPaid.toFixed(2)}</td>
+          <td>${r.remarks || ''}</td>
+          <td style="font-weight:600; color:#1a5fb0;">₹${r.remainingAmt.toFixed(2)}</td>
+        </tr>`;
+      });
+    }
+    
+    // Display updates inside popup cards
+    document.getElementById('modalTableBody').innerHTML = html;
+    document.getElementById('mTotalId').textContent = tId;
+    document.getElementById('mWorking').textContent = '₹' + wk.toFixed(2);
+    document.getElementById('mTransfer').textContent = '₹' + tf.toFixed(2);
+    document.getElementById('mPaid').textContent = '₹' + mp.toFixed(2);
+    document.getElementById('mRemaining').textContent = '₹' + rem.toFixed(2);
+    
+    modal.classList.add('show');
+  }
+
+  function closeMonthLedger() {
+    document.getElementById('overlapMonthLedger').classList.remove('show');
+  }
+
+  // Close popup if clicked background
+  window.addEventListener('click', function(e) {
+    const modal = document.getElementById('overlapMonthLedger');
+    if (e.target === modal) { closeMonthLedger(); }
+  });
+
+  // ============================================================
+  // LOAD & SYNC SYSTEM
   // ============================================================
   function loadFromSheet(options = {}) {
     const silent = options.silent !== false;
-    if (!silent) {
-      updateStatus('Loading data...', 'loading');
-    }
+    if (!silent) updateStatus('Loading data...', 'loading');
     jsonpRequest({ action: 'getRecords' })
       .then(data => {
         if (data.status === 'success' && data.data) {
@@ -544,40 +626,24 @@
           nextId = maxId + 1;
           isSynced = true;
           renderTable(true);
-          if (!silent) {
-            updateStatus('Loaded ' + records.length + ' records');
-          }
+          if (!silent) updateStatus('Loaded ' + records.length + ' records');
         } else {
-          if (!silent) {
-            updateStatus('No data found', 'error');
-          }
+          if (!silent) updateStatus('No data found');
         }
       })
-      .catch(err => {
-        if (!silent) {
-          updateStatus('Load failed: ' + err.message, 'error');
-        }
-      });
+      .catch(() => { if (!silent) updateStatus('Load failed', 'error'); });
   }
 
-  // ============================================================
-  // CALL GS ACTION
-  // ============================================================
   function callGSAction(action, data = null, rowIndex = null) {
     const params = { action };
     if (data) params.data = JSON.stringify(data);
     if (rowIndex !== null) params.rowIndex = String(rowIndex);
     return jsonpRequest(params).then(result => {
-      if (result.status === 'success') {
-        return result;
-      }
-      throw new Error(result.message || 'Unknown error');
+      if (result.status === 'success') return result;
+      throw new Error(result.message || 'Error');
     });
   }
 
-  // ============================================================
-  // JSONP REQUEST HELPER
-  // ============================================================
   function jsonpRequest(params) {
     return new Promise((resolve, reject) => {
       const callbackName = 'gs_jsonp_' + Date.now() + '_' + (++jsonpCounter);
@@ -585,678 +651,305 @@
       const query = new URLSearchParams();
       query.set('callback', callbackName);
       Object.keys(params || {}).forEach(key => {
-        if (params[key] !== undefined && params[key] !== null) {
-          query.set(key, params[key]);
-        }
+        if (params[key] !== null && params[key] !== undefined) query.set(key, params[key]);
       });
       const cleanup = () => {
         if (window[callbackName]) delete window[callbackName];
         if (script.parentNode) script.parentNode.removeChild(script);
       };
-      const timeoutId = setTimeout(() => {
-        cleanup();
-        reject(new Error('Request timed out'));
-      }, 15000);
-      window[callbackName] = function (payload) {
-        clearTimeout(timeoutId);
-        cleanup();
-        resolve(payload);
-      };
+      window[callbackName] = function (payload) { cleanup(); resolve(payload); };
       script.src = GS_URL + '?' + query.toString();
       script.async = true;
-      script.onerror = function () {
-        clearTimeout(timeoutId);
-        cleanup();
-        reject(new Error('Unable to load Google Sheet response'));
-      };
-      (document.head || document.body || document.documentElement).appendChild(script);
+      script.onerror = function () { cleanup(); reject(new Error('Network error')); };
+      document.head.appendChild(script);
     });
   }
 
   // ============================================================
-  // FORM TOGGLE
+  // FORM SELECTION
   // ============================================================
   function toggleForm() {
     const panel = document.getElementById('entryPanel');
-    const btnText = document.getElementById('toggleBtnText');
-    if (panel.classList.contains('show')) {
-      closeForm();
-    } else {
-      resetFormAndClearSelection();
-      panel.classList.add('show');
-      btnText.textContent = 'Close Form';
-    }
+    if (panel.classList.contains('show')) { closeForm(); } 
+    else { resetFormAndClearSelection(); panel.classList.add('show'); document.getElementById('toggleBtnText').textContent = 'Close'; }
   }
 
   function closeForm() {
-    const panel = document.getElementById('entryPanel');
-    const btnText = document.getElementById('toggleBtnText');
-    panel.classList.remove('show');
-    btnText.textContent = 'New Entry';
-    if (editingRowId !== null) {
-      resetFormAndClearSelection();
-    }
-  }
-
-  function openFormForEdit() {
-    const panel = document.getElementById('entryPanel');
-    const btnText = document.getElementById('toggleBtnText');
-    panel.classList.add('show');
-    btnText.textContent = 'Close Form';
-  }
-
-  // ============================================================
-  // MONTH DROPDOWN
-  // ============================================================
-  function getMonthOptions(anchorDate = new Date()) {
-    const baseDate = anchorDate instanceof Date ? anchorDate : new Date(anchorDate);
-    const validBase = isNaN(baseDate) ? new Date() : baseDate;
-    const currentYear = validBase.getFullYear();
-    const currentMonth = validBase.getMonth();
-    const months = [];
-    for (let offset = -3; offset <= 3; offset++) {
-      const d = new Date(currentYear, currentMonth + offset, 1);
-      const year = d.getFullYear();
-      const month = d.getMonth();
-      const monthName = d.toLocaleString('en-US', { month: 'short' });
-      months.push({
-        label: `${monthName}-${year}`,
-        value: `${monthName}-${year}`,
-        year: year,
-        monthIndex: month,
-        dateObj: d
-      });
-    }
-    return months;
+    document.getElementById('entryPanel').classList.remove('show');
+    document.getElementById('toggleBtnText').textContent = 'New Entry';
   }
 
   function populateMonthDropdown(selectElement, selectedValue, anchorDate = null) {
-    if (!selectElement) return;
-    const dateInput = document.getElementById('fDate');
-    let dateObj = null;
-    if (anchorDate) {
-      dateObj = anchorDate;
-    } else if (dateInput && dateInput.value) {
-      dateObj = getDateFromInput(dateInput);
-    }
-    if (!dateObj || isNaN(dateObj)) {
-      dateObj = new Date();
-    }
-    const options = getMonthOptions(dateObj);
+    let dateObj = anchorDate || getDateFromInput(document.getElementById('fDate')) || new Date();
+    if (isNaN(dateObj)) dateObj = new Date();
+    const currentYear = dateObj.getFullYear();
+    const currentMonth = dateObj.getMonth();
     selectElement.innerHTML = '';
-    options.forEach(opt => {
-      const option = document.createElement('option');
-      option.value = opt.value;
-      option.textContent = opt.label;
-      if (selectedValue && opt.value === selectedValue) {
-        option.selected = true;
-      }
-      selectElement.appendChild(option);
-    });
-    if (!selectedValue) {
-      const defaultIndex = 3;
-      if (selectElement.options[defaultIndex]) {
-        selectElement.options[defaultIndex].selected = true;
-      }
+    for (let offset = -3; offset <= 3; offset++) {
+      const d = new Date(currentYear, currentMonth + offset, 1);
+      const mName = d.toLocaleString('en-US', { month: 'short' });
+      const val = `${mName}-${d.getFullYear()}`;
+      const opt = document.createElement('option');
+      opt.value = val; opt.textContent = val;
+      if (selectedValue && val === selectedValue) opt.selected = true;
+      selectElement.appendChild(opt);
     }
+    if (!selectedValue) selectElement.options[3].selected = true;
   }
 
   function refreshMonthDropdownFromDate() {
-    const dateInput = document.getElementById('fDate');
-    const monthSelect = document.getElementById('fMonth');
-    if (!dateInput || !monthSelect) return;
-    const currentSelected = monthSelect.value || null;
-    const dateValue = getDateFromInput(dateInput);
-    populateMonthDropdown(monthSelect, currentSelected, dateValue);
+    populateMonthDropdown(document.getElementById('fMonth'), document.getElementById('fMonth').value, getDateFromInput(document.getElementById('fDate')));
   }
 
   // ============================================================
-  // DATE HELPERS
+  // HELPERS AND MATHEMATICS
   // ============================================================
-  function pad2(value) {
-    return String(value).padStart(2, '0');
+  function formatDateForDisplay(v) {
+    if (!v) return '';
+    const str = String(v).trim();
+    const m = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/) || str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return m[3].length === 4 ? `${String(m[1]).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}-${m[3]}` : `${String(m[3]).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}-${m[1]}`;
+    const p = new Date(str); return isNaN(p) ? str : `${String(p.getDate()).padStart(2,'0')}-${String(p.getMonth()+1).padStart(2,'0')}-${p.getFullYear()}`;
   }
 
-  function formatDateForDisplay(value) {
-    if (!value) return '';
-    if (value instanceof Date && !isNaN(value)) {
-      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
-    }
-    const str = String(value).trim();
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dmyMatch) {
-      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
-    }
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
-    }
-    const parsed = new Date(str);
-    if (!isNaN(parsed)) {
-      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
+  function formatMonthForDisplay(v, fb = '') {
+    if (!v) return '';
+    const str = String(v).trim();
+    if (str.includes('-')) {
+      const parts = str.split('-');
+      if(isNaN(parts[0])) return parts[0].charAt(0).toUpperCase() + parts[0].slice(1,3).toLowerCase() + '-' + (parts[1].length === 2 ? '20'+parts[1] : parts[1]);
     }
     return str;
   }
 
-  function formatDateForInput(value) {
-    if (!value) return '';
-    if (value instanceof Date && !isNaN(value)) {
-      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
-    }
-    const str = String(value).trim();
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dmyMatch) {
-      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
-    }
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
-    }
-    const parsed = new Date(str);
-    if (!isNaN(parsed)) {
-      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
-    }
-    return '';
+  function toSafeNumber(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
+
+  function sortByDateAsc(list) {
+    return [...list].sort((a,b) => (parseDateValue(a.date) || 0) - (parseDateValue(b.date) || 0));
   }
 
-  function formatDateForSheet(value) {
-    if (!value) return '';
-    const str = String(value).trim();
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
-    }
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dmyMatch) {
-      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
-    }
-    const parsed = new Date(str);
-    if (!isNaN(parsed)) {
-      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
-    }
-    return str;
+  document.addEventListener('keydown', function(e) { if(e.key === 'Escape') closeMonthLedger(); });
+
+  function parseDateValue(v) {
+    if (!v) return null;
+    const str = String(v).trim();
+    const m = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (m) return new Date(m[3], m[2]-1, m[1]).getTime();
+    const p = new Date(str); return isNaN(p) ? null : p.getTime();
   }
 
-  function extractYear(value) {
-    const str = String(value || '');
-    const yearMatch = str.match(/\b(19|20)\d{2}\b/);
-    if (yearMatch) return yearMatch[0];
-    const shortYearMatch = str.match(/\b\d{2}\b/);
-    if (shortYearMatch) return `20${shortYearMatch[0]}`;
-    return '';
-  }
-
-  function extractMonthName(value) {
-    const str = String(value || '').toLowerCase();
-    const months = [
-      ['jan', 'january'], ['feb', 'february'], ['mar', 'march'],
-      ['apr', 'april'], ['may'], ['jun', 'june'],
-      ['jul', 'july'], ['aug', 'august'], ['sep', 'sept', 'september'],
-      ['oct', 'october'], ['nov', 'november'], ['dec', 'december']
-    ];
-    for (const names of months) {
-      if (names.some(name => str.includes(name))) {
-        return names[0].slice(0, 1).toUpperCase() + names[0].slice(1, 3);
-      }
-    }
-    return '';
-  }
-
-  function formatMonthForDisplay(value, fallbackDate = '') {
-    if (!value) return '';
-    const str = String(value).trim();
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dmyMatch) {
-      const d = new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
-      return d.toLocaleString('en-US', { month: 'short' }) + '-' + d.getFullYear();
-    }
-    const explicitMatch = str.match(/^([A-Za-z]{3,9})[-\s\/,]*?(\d{2,4})$/);
-    if (explicitMatch) {
-      const monthToken = explicitMatch[1].slice(0, 3).charAt(0).toUpperCase() + explicitMatch[1].slice(1, 3).toLowerCase();
-      const yearToken = explicitMatch[2].length === 2 ? `20${explicitMatch[2]}` : explicitMatch[2];
-      return `${monthToken}-${yearToken}`;
-    }
-    const monthToken = extractMonthName(str);
-    if (monthToken) {
-      const yearToken = extractYear(str) || extractYear(fallbackDate) || new Date().getFullYear();
-      return `${monthToken}-${yearToken}`;
-    }
-    return str;
-  }
-
-  function toSafeNumber(value, fallback = 0) {
-    const num = typeof value === 'number' ? value : parseFloat(value);
-    return Number.isFinite(num) ? num : fallback;
-  }
-
-  function parseDateValue(value) {
-    if (!value) return null;
-    if (value instanceof Date && !isNaN(value)) return value.getTime();
-    const str = String(value).trim();
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dmyMatch) {
-      return new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1])).getTime();
-    }
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-      return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3])).getTime();
-    }
-    const parsed = new Date(str);
-    if (!isNaN(parsed)) return parsed.getTime();
-    return null;
-  }
-
-  // ============================================================
-  // SORTING - Ascending order
-  // ============================================================
-  function sortByDateAsc(recordsList) {
-    return [...recordsList].sort((a, b) => {
-      const aTime = parseDateValue(a.date);
-      const bTime = parseDateValue(b.date);
-      if (aTime === null && bTime === null) return 0;
-      if (aTime === null) return 1;
-      if (bTime === null) return -1;
-      return aTime - bTime;
+  function recalculateDerivedRecords(list) {
+    const sorted = sortByDateAsc(list.map(r => ({
+      id: r.id, date: formatDateForDisplay(r.date), month: formatMonthForDisplay(r.month, r.date),
+      totalId: toSafeNumber(r.totalId), workingAmt: toSafeNumber(r.workingAmt), transferAmt: toSafeNumber(r.transferAmt),
+      monthlyPaid: toSafeNumber(r.monthlyPaid), otherAmt: toSafeNumber(r.otherAmt), remarks: r.remarks ? String(r.remarks).trim() : ''
+    })));
+    let runningPrev = 0;
+    return sorted.map(r => {
+      r.totalPending = r.workingAmt + runningPrev;
+      r.remainingAmt = r.totalPending - r.transferAmt - r.monthlyPaid;
+      runningPrev = r.remainingAmt;
+      return r;
     });
-  }
-
-  function normalizeLoadedRecord(rec) {
-    return {
-      id: rec.id,
-      date: formatDateForDisplay(rec.date),
-      month: formatMonthForDisplay(rec.month, rec.date),
-      totalId: toSafeNumber(rec.totalId),
-      workingAmt: toSafeNumber(rec.workingAmt),
-      transferAmt: toSafeNumber(rec.transferAmt),
-      monthlyPaid: toSafeNumber(rec.monthlyPaid),
-      otherAmt: toSafeNumber(rec.otherAmt),
-      remarks: rec.remarks ? String(rec.remarks).trim() : '',
-      totalPending: toSafeNumber(rec.totalPending),
-      remainingAmt: toSafeNumber(rec.remainingAmt)
-    };
-  }
-
-  // ============================================================
-  // RECALCULATE DERIVED RECORDS
-  // ============================================================
-  function recalculateDerivedRecords(recordsList) {
-    const sorted = sortByDateAsc(recordsList.map(normalizeLoadedRecord));
-    let previousRemaining = 0;
-    return sorted.map((rec) => {
-      const totalPending = rec.workingAmt + previousRemaining;
-      const remainingAmt = totalPending - rec.transferAmt - rec.monthlyPaid;
-      previousRemaining = remainingAmt;
-      return {
-        ...rec,
-        totalPending: Number.isFinite(totalPending) ? totalPending : 0,
-        remainingAmt: Number.isFinite(remainingAmt) ? remainingAmt : 0
-      };
-    });
-  }
-
-  // ============================================================
-  // AUTO CALCULATION
-  // ============================================================
-  function getPreviousRemainingForDate(targetDate, excludeId = null) {
-    const targetTime = parseDateValue(targetDate);
-    if (targetTime === null) return 0;
-    let filteredRecords = [...records];
-    if (excludeId !== null) {
-      filteredRecords = filteredRecords.filter(r => r.id !== excludeId);
-    }
-    const previousRecords = filteredRecords.filter(r => {
-      const rTime = parseDateValue(r.date);
-      return rTime !== null && rTime <= targetTime;
-    });
-    if (previousRecords.length === 0) return 0;
-    const sorted = sortByDateAsc(previousRecords);
-    const lastRecord = sorted[sorted.length - 1];
-    return lastRecord.remainingAmt || 0;
   }
 
   function calculatePendingAndRemaining() {
-    const dateInput = document.getElementById('fDate');
-    const date = dateInput ? dateInput.value : '';
     const workingAmt = parseFloat(document.getElementById('fWorkingAmt').value) || 0;
     const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
     const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
+    const tTime = parseDateValue(document.getElementById('fDate').value);
     
     let prevRemaining = 0;
-    if (date) {
-      if (editingRowId !== null) {
-        prevRemaining = getPreviousRemainingForDate(date, editingRowId);
-      } else {
-        prevRemaining = getPreviousRemainingForDate(date);
-      }
+    if (tTime) {
+      let fList = records.filter(r => r.id !== editingRowId);
+      const prevs = sortByDateAsc(fList.filter(r => { const rT = parseDateValue(r.date); return rT && rT <= tTime; }));
+      if (prevs.length > 0) prevRemaining = prevs[prevs.length - 1].remainingAmt || 0;
     }
-    const totalPending = workingAmt + prevRemaining;
-    const remaining = totalPending - transferAmt - monthlyPaid;
-    document.getElementById('fTotalPending').value = totalPending.toFixed(2);
-    document.getElementById('fRemainingAmt').value = remaining.toFixed(2);
+    const pending = workingAmt + prevRemaining;
+    document.getElementById('fTotalPending').value = pending.toFixed(2);
+    document.getElementById('fRemainingAmt').value = (pending - transferAmt - monthlyPaid).toFixed(2);
   }
 
   function calculateRemaining() {
-    const totalPending = parseFloat(document.getElementById('fTotalPending').value) || 0;
+    const pending = parseFloat(document.getElementById('fTotalPending').value) || 0;
     const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
     const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
-    const remaining = totalPending - transferAmt - monthlyPaid;
-    document.getElementById('fRemainingAmt').value = remaining.toFixed(2);
+    document.getElementById('fRemainingAmt').value = (pending - transferAmt - monthlyPaid).toFixed(2);
   }
 
   // ============================================================
-  // DASHBOARD
-  // ============================================================
-  function updateDashboard() {
-    if (records.length === 0) {
-      document.getElementById('dashMonths').textContent = '0';
-      document.getElementById('dashTotalId').textContent = '0';
-      document.getElementById('dashWorking').textContent = '₹0';
-      document.getElementById('dashTransfer').textContent = '₹0';
-      document.getElementById('dashMonthlyPaid').textContent = '₹0';
-      document.getElementById('dashRemainingTransferable').textContent = '₹0';
-      return;
-    }
-    const uniqueMonths = new Set(records.map(r => r.month));
-    document.getElementById('dashMonths').textContent = uniqueMonths.size;
-    let totalId = 0, working = 0, transfer = 0, monthlyPaid = 0;
-    records.forEach(r => {
-      totalId += r.totalId || 0;
-      working += r.workingAmt || 0;
-      transfer += r.transferAmt || 0;
-      monthlyPaid += r.monthlyPaid || 0;
-    });
-    const remainingTransferable = working - transfer - monthlyPaid;
-    document.getElementById('dashTotalId').textContent = totalId;
-    document.getElementById('dashWorking').textContent = '₹' + working.toFixed(2);
-    document.getElementById('dashTransfer').textContent = '₹' + transfer.toFixed(2);
-    document.getElementById('dashMonthlyPaid').textContent = '₹' + monthlyPaid.toFixed(2);
-    document.getElementById('dashRemainingTransferable').textContent = '₹' + remainingTransferable.toFixed(2);
-  }
-
-  // ============================================================
-  // RENDER TABLE
+  // DOM RENDERING
   // ============================================================
   function renderTable(silent = false) {
-    const sortedRecords = sortByDateAsc(records);
+    const sorted = sortByDateAsc(records);
     const tbody = document.getElementById('tableBody');
-    const rowCountSpan = document.getElementById('rowCount');
-    if (!sortedRecords.length) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="12">📭 No records yet. Add a new entry above.</td></tr>`;
-      rowCountSpan.textContent = '0';
-      updateDashboard();
-      return;
+    if (!sorted.length) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="12">📭 No records found. Click New Entry to add.</td></tr>`;
+      document.getElementById('rowCount').textContent = '0';
+      updateDashboard(); return;
     }
     let html = '';
-    sortedRecords.forEach((rec, index) => {
-      const realIndex = index + 1;
+    sorted.forEach((rec, idx) => {
       html += `<tr>
-        <td><span class="badge-id">${realIndex}</span></td>
-        <td>${formatDateForDisplay(rec.date)}</td>
-        <td>${rec.month || ''}</td>
-        <td>${rec.totalId || ''}</td>
-        <td>${rec.workingAmt ?? ''}</td>
-        <td>${rec.transferAmt ?? ''}</td>
-        <td>${rec.monthlyPaid ?? ''}</td>
-        <td>${rec.otherAmt ?? ''}</td>
-        <td>${rec.remarks || ''}</td>
-        <td style="font-weight:600; color:#1a5fb0;">${rec.totalPending ?? ''}</td>
-        <td style="font-weight:600; color:#1a5fb0;">${rec.remainingAmt ?? ''}</td>
+        <td><span class="badge-id">${idx + 1}</span></td>
+        <td>${rec.date}</td>
+        <td><span class="month-link" onclick="openMonthLedger('${rec.month}')"><i class="far fa-folder" style="margin-right:3px;"></i>${rec.month}</span></td>
+        <td>${rec.totalId}</td>
+        <td>₹${rec.workingAmt.toFixed(2)}</td>
+        <td>₹${rec.transferAmt.toFixed(2)}</td>
+        <td>₹${rec.monthlyPaid.toFixed(2)}</td>
+        <td>₹${rec.otherAmt.toFixed(2)}</td>
+        <td style="background: #fffcf0; font-weight: 500;">${rec.remarks}</td>
+        <td style="font-weight:600; color:#1a5fb0;">₹${rec.totalPending.toFixed(2)}</td>
+        <td style="font-weight:600; color:#1a5fb0;">₹${rec.remainingAmt.toFixed(2)}</td>
         <td>
           <div class="col-actions">
-            <button class="edit-btn" onclick="editRecord(${rec.id})"><i class="fas fa-pen"></i> Edit</button>
-            <button class="delete-btn" onclick="deleteRecord(${rec.id})"><i class="fas fa-trash"></i> Del</button>
+            <button class="edit-btn" onclick="editRecord(${rec.id})"><i class="fas fa-pen"></i></button>
+            <button class="delete-btn" onclick="deleteRecord(${rec.id})"><i class="fas fa-trash"></i></button>
           </div>
         </td>
       </tr>`;
     });
     tbody.innerHTML = html;
-    rowCountSpan.textContent = sortedRecords.length;
+    document.getElementById('rowCount').textContent = sorted.length;
     updateDashboard();
-    if (!silent) {
-      updateStatus('✅ Loaded ' + sortedRecords.length + ' records');
+  }
+
+  function updateDashboard() {
+    if(!records.length) {
+      ['dashMonths','dashTotalId'].forEach(id => document.getElementById(id).textContent = '0');
+      ['dashWorking','dashTransfer','dashMonthlyPaid','dashRemainingTransferable'].forEach(id => document.getElementById(id).textContent = '₹0.00');
+      return;
     }
+    document.getElementById('dashMonths').textContent = new Set(records.map(r => r.month)).size;
+    let tId = 0, wk = 0, tf = 0, mp = 0;
+    records.forEach(r => { tId += r.totalId; wk += r.workingAmt; tf += r.transferAmt; mp += r.monthlyPaid; });
+    document.getElementById('dashTotalId').textContent = tId;
+    document.getElementById('dashWorking').textContent = '₹' + wk.toFixed(2);
+    document.getElementById('dashTransfer').textContent = '₹' + tf.toFixed(2);
+    document.getElementById('dashMonthlyPaid').textContent = '₹' + mp.toFixed(2);
+    document.getElementById('dashRemainingTransferable').textContent = '₹' + (wk - tf - mp).toFixed(2);
   }
 
   // ============================================================
-  // CRUD OPERATIONS
+  // CRUD CALLS
   // ============================================================
-  function generateId() { return nextId++; }
-
   function handleSave() {
-    const dateInput = document.getElementById('fDate');
-    if (!validateDateInput(dateInput)) {
-      return;
-    }
-    const date = dateInput.value;
-    const monthSelect = document.getElementById('fMonth');
-    const month = formatMonthForDisplay(monthSelect.value, date);
-    const totalId = parseFloat(document.getElementById('fTotalId').value) || 0;
-    const workingAmt = parseFloat(document.getElementById('fWorkingAmt').value) || 0;
-    const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
-    const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
-    const otherAmt = parseFloat(document.getElementById('fOtherAmt').value) || 0;
-    const remarks = document.getElementById('fRemarks').value.trim();
-    const totalPending = parseFloat(document.getElementById('fTotalPending').value) || 0;
-    const remainingAmt = parseFloat(document.getElementById('fRemainingAmt').value) || 0;
+    const dInput = document.getElementById('fDate');
+    if (!validateDateInput(dInput)) return;
+    const date = dInput.value; if(!date) { alert('Date is required!'); return; }
 
-    if (!date || !month) {
-      alert('⚠️ Please enter DATE and MONTH (required).');
-      return;
-    }
-
-    const formattedDate = formatDateForDisplay(date);
-    const sheetDate = formatDateForSheet(date);
-
-    const newRecord = {
-      date: formattedDate,
-      month: month,
-      totalId: totalId,
-      workingAmt: workingAmt,
-      transferAmt: transferAmt,
-      monthlyPaid: monthlyPaid,
-      otherAmt: otherAmt,
-      remarks: remarks,
-      totalPending: totalPending,
-      remainingAmt: remainingAmt
+    const newRec = {
+      date: formatDateForDisplay(date),
+      month: document.getElementById('fMonth').value,
+      totalId: parseInt(document.getElementById('fTotalId').value) || 0,
+      workingAmt: parseFloat(document.getElementById('fWorkingAmt').value) || 0,
+      transferAmt: parseFloat(document.getElementById('fTransferAmt').value) || 0,
+      monthlyPaid: parseFloat(document.getElementById('fMonthlyPaid').value) || 0,
+      otherAmt: parseFloat(document.getElementById('fOtherAmt').value) || 0,
+      remarks: document.getElementById('fRemarks').value.trim()
     };
 
+    const bits = newRec.date.split('-');
+    const sheetFormattedData = { ...newRec, date: `${bits[0]}-${bits[1]}-${bits[2]}` };
+
     if (editingRowId !== null) {
-      const index = records.findIndex(r => r.id === editingRowId);
-      if (index !== -1) {
-        newRecord.date = formattedDate;
-        newRecord.id = editingRowId;
-        records[index] = { ...records[index], ...newRecord };
+      const idx = records.findIndex(r => r.id === editingRowId);
+      if (idx !== -1) {
+        sheetFormattedData.id = editingRowId;
+        records[idx] = sheetFormattedData;
         records = recalculateDerivedRecords(records);
-        updateStatus('✏️ Record updated locally');
-        const updateData = { ...newRecord, date: sheetDate };
-        updateRecordInSheet(editingRowId, updateData);
-      } else {
-        alert('Error: record not found.');
-        resetFormAndClearSelection();
-        renderTable();
-        return;
+        updateStatus('Updating Sheet...');
+        callGSAction('updateRecord', sheetFormattedData, editingRowId)
+          .then(() => updateStatus('✅ Updated successfully'))
+          .catch(() => updateStatus('❌ Sync Error', 'error'));
       }
     } else {
-      const newId = generateId();
-      newRecord.id = newId;
-      records.push(newRecord);
+      sheetFormattedData.id = nextId++;
+      records.push(sheetFormattedData);
       records = recalculateDerivedRecords(records);
-      updateStatus('➕ New record added locally');
-      const saveData = { ...newRecord, date: sheetDate };
-      saveRecordToSheet(saveData);
+      updateStatus('Saving to Sheet...');
+      callGSAction('saveRecord', sheetFormattedData)
+        .then(() => updateStatus('✅ Saved successfully'))
+        .catch(() => updateStatus('❌ Sync Error', 'error'));
     }
-
-    closeForm();
-    resetFormAndClearSelection();
-    renderTable();
+    closeForm(); resetFormAndClearSelection(); renderTable();
   }
 
   function editRecord(id) {
-    const rec = records.find(r => r.id === id);
-    if (!rec) return;
-    
-    document.getElementById('fDate').value = formatDateForInput(rec.date);
-    const monthSelect = document.getElementById('fMonth');
-    const dateObj = getDateFromInput(document.getElementById('fDate'));
-    populateMonthDropdown(monthSelect, formatMonthForDisplay(rec.month, rec.date) || null, dateObj);
+    const rec = records.find(r => r.id === id); if (!rec) return;
+    editingRowId = id;
+    document.getElementById('fDate').value = rec.date;
+    populateMonthDropdown(document.getElementById('fMonth'), rec.month, getDateFromInput(document.getElementById('fDate')));
     document.getElementById('fTotalId').value = rec.totalId || '';
-    document.getElementById('fWorkingAmt').value = rec.workingAmt ?? '';
-    document.getElementById('fTransferAmt').value = rec.transferAmt ?? '';
-    document.getElementById('fMonthlyPaid').value = rec.monthlyPaid ?? '';
-    document.getElementById('fOtherAmt').value = rec.otherAmt ?? '';
+    document.getElementById('fWorkingAmt').value = rec.workingAmt || '';
+    document.getElementById('fTransferAmt').value = rec.transferAmt || '';
+    document.getElementById('fMonthlyPaid').value = rec.monthlyPaid || '';
+    document.getElementById('fOtherAmt').value = rec.otherAmt || '';
     document.getElementById('fRemarks').value = rec.remarks || '';
-    
-    editingRowId = rec.id;
     calculatePendingAndRemaining();
     
     document.getElementById('editRowId').style.display = 'inline-block';
-    document.getElementById('editIdDisplay').textContent = editingRowId;
-    document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit" style="color:#1a73e8;"></i> Edit Record (Row ' + editingRowId + ')';
-    document.getElementById('saveBtn').innerHTML = '<i class="fas fa-pen"></i> Update';
-    updateStatus('✏️ Editing row: ' + editingRowId);
-    openFormForEdit();
+    document.getElementById('editIdDisplay').textContent = id;
+    document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Entry';
+    document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save"></i> Update';
+    document.getElementById('entryPanel').classList.add('show');
   }
 
   function deleteRecord(id) {
-    if (!confirm('⚠️ Delete this record permanently?')) return;
-    const rec = records.find(r => r.id === id);
-    if (!rec) return;
-    
-    deleteRecordFromSheet(id);
+    if (!confirm('Permanently delete this entry?')) return;
     records = records.filter(r => r.id !== id);
     records = recalculateDerivedRecords(records);
-    if (editingRowId === id) resetFormAndClearSelection();
-    renderTable();
-    updateStatus('🗑️ Deleted record ID: ' + id);
-  }
-
-  // ============================================================
-  // GOOGLE SHEET SYNC FUNCTIONS
-  // ============================================================
-  function saveRecordToSheet(data) {
-    callGSAction('saveRecord', data)
-      .then(() => {
-        isSynced = true;
-      })
-      .catch(err => {
-        updateStatus('⚠️ Failed to sync: ' + err.message, 'error');
-      });
-  }
-
-  // ============================================================
-  // OTHER CONTROLS
-  // ============================================================
-  function updateRecordInSheet(rowIndex, data) {
-    callGSAction('updateRecord', data, rowIndex)
-      .then(() => { isSynced = true; })
-      .catch(err => { updateStatus('⚠️ Failed to update: ' + err.message, 'error'); });
-  }
-
-  function deleteRecordFromSheet(rowIndex) {
-    callGSAction('deleteRecord', null, rowIndex)
-      .then(() => { updateStatus('🗑️ Record deleted from Google Sheet'); })
-      .catch(err => { updateStatus('⚠️ Failed to delete from sheet: ' + err.message, 'error'); });
+    renderTable(); updateStatus('Deleting...');
+    callGSAction('deleteRecord', null, id)
+      .then(() => updateStatus('🗑️ Entry deleted'))
+      .catch(() => updateStatus('❌ Error deleting', 'error'));
   }
 
   function clearAllData() {
-    if (!confirm('⚠️ This will delete ALL data from the sheet. Are you sure?')) return;
-    if (!confirm('⚠️ Final confirmation: This cannot be undone!')) return;
-    callGSAction('clearAllData')
-      .then(() => {
-        records = [];
-        renderTable();
-        updateStatus('🗑️ All data cleared from Google Sheet');
-      })
-      .catch(err => { updateStatus('⚠️ Failed to clear data: ' + err.message, 'error'); });
+    if (!confirm('⚠️ Delete EVERYTHING from Google Sheet?')) return;
+    updateStatus('Clearing...', 'loading');
+    callGSAction('clearAllData').then(() => { records = []; renderTable(); updateStatus('🗑️ All data wiped'); });
   }
 
   function resetFormAndClearSelection() {
-    const todayStr = getTodayDateString();
-    document.getElementById('fDate').value = todayStr;
-    const dateObj = getDateFromInput(document.getElementById('fDate'));
-    const monthSelect = document.getElementById('fMonth');
-    populateMonthDropdown(monthSelect, null, dateObj);
-    document.getElementById('fTotalId').value = '';
-    document.getElementById('fWorkingAmt').value = '';
-    document.getElementById('fTransferAmt').value = '';
-    document.getElementById('fMonthlyPaid').value = '';
-    document.getElementById('fOtherAmt').value = '';
-    document.getElementById('fRemarks').value = '';
-    document.getElementById('fTotalPending').value = '';
-    document.getElementById('fRemainingAmt').value = '';
     editingRowId = null;
+    document.getElementById('fDate').value = getTodayDateString();
+    populateMonthDropdown(document.getElementById('fMonth'), null, new Date());
+    ['fTotalId','fWorkingAmt','fTransferAmt','fMonthlyPaid','fOtherAmt','fRemarks','fTotalPending','fRemainingAmt'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('editRowId').style.display = 'none';
-    document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle" style="color:#1a73e8;"></i> Add New Record';
+    document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Add New Record';
     document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save"></i> Save';
-    updateStatus('📝 New entry mode');
     calculatePendingAndRemaining();
   }
 
-  function refreshTable() { renderTable(); updateStatus('🔄 Refreshed'); }
+  function refreshTable() { loadFromSheet({ silent: false }); }
 
   function updateStatus(msg, type = 'normal') {
     const el = document.getElementById('statusMessage');
-    if (type === 'loading') {
-      el.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ' + msg; el.className = 'status-msg loading';
-    } else if (type === 'error') {
-      el.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msg; el.className = 'status-msg error';
-    } else {
-      el.innerHTML = '<i class="fas fa-circle" style="color:#1a73e8; font-size: 0.5rem;"></i> ' + msg; el.className = 'status-msg';
-    }
+    if (type === 'loading') el.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ' + msg;
+    else if (type === 'error') el.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msg;
+    else el.innerHTML = '<i class="fas fa-circle" style="color:#1a73e8; font-size:0.5rem;"></i> ' + msg;
+    el.className = 'status-msg ' + (type !== 'normal' ? type : '');
   }
 
-  // ============================================================
-  // EXCEL EXPORT
-  // ============================================================
   function exportExcel() {
-    if (records.length === 0) { alert('⚠️ No data to export.'); return; }
-    const sortedRecords = sortByDateAsc(records);
-    const excelData = sortedRecords.map((rec, index) => ({
-      '#': index + 1, 'DATE': rec.date || '', 'MONTH': rec.month || '', 'TOTAL ID': rec.totalId || 0,
-      'WORKING AMOUNT': rec.workingAmt || 0, 'TRANSFER AMT': rec.transferAmt || 0, 'MONTHLY PAID AMT': rec.monthlyPaid || 0,
-      'OTHER AMT FROM SETUP AND UPLOADING': rec.otherAmt || 0, 'REMARKS': rec.remarks || '',
-      'TOTAL PENDING AMT': rec.totalPending || 0, 'REMAINING AMT': rec.remainingAmt || 0
+    if (!records.length) { alert('No data to export!'); return; }
+    const excelData = sortByDateAsc(records).map((r, i) => ({
+      '#': i + 1, 'DATE': r.date, 'MONTH': r.month, 'TOTAL ID': r.totalId, 'WORKING AMOUNT': r.workingAmt,
+      'TRANSFER AMT': r.transferAmt, 'MONTHLY PAID': r.monthlyPaid, 'OTHER AMT': r.otherAmt, 'REMARKS': r.remarks,
+      'TOTAL PENDING': r.totalPending, 'REMAINING': r.remainingAmt
     }));
-    let totalId = 0, working = 0, transfer = 0, monthlyPaid = 0, other = 0, totalPending = 0, remaining = 0;
-    sortedRecords.forEach(r => {
-      totalId += r.totalId || 0; working += r.workingAmt || 0; transfer += r.transferAmt || 0;
-      monthlyPaid += r.monthlyPaid || 0; other += r.otherAmt || 0; totalPending += r.totalPending || 0; remaining += r.remainingAmt || 0;
-    });
-    excelData.push({
-      '#': 'TOTAL', 'DATE': '', 'MONTH': '', 'TOTAL ID': totalId, 'WORKING AMOUNT': working,
-      'TRANSFER AMT': transfer, 'MONTHLY PAID AMT': monthlyPaid, 'OTHER AMT FROM SETUP AND UPLOADING': other,
-      'REMARKS': '', 'TOTAL PENDING AMT': totalPending, 'REMAINING AMT': remaining
-    });
-    const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(excelData);
-    ws['!cols'] = [
-      { wch: 6 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 14 },
-      { wch: 18 }, { wch: 30 }, { wch: 20 }, { wch: 18 }, { wch: 16 }
-    ];
-    XLSX.utils.book_append_sheet(wb, ws, 'CRM_Data');
-    const filename = `CRM_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(wb, filename); updateStatus('📥 Excel exported successfully!');
+    const ws = XLSX.utils.json_to_sheet(excelData); const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'CRM_Ledger');
+    XLSX.writeFile(wb, `CRM_Ledger_Export.xlsx`);
   }
 
-  // ============================================================
-  // INIT
-  // ============================================================
-  const todayStr = getTodayDateString();
-  document.getElementById('fDate').value = todayStr;
-  const dateObj = getDateFromInput(document.getElementById('fDate'));
-  const monthSelect = document.getElementById('fMonth');
-  populateMonthDropdown(monthSelect, null, dateObj);
-  
-  setTimeout(() => {
-    calculatePendingAndRemaining(); updateDashboard(); renderTable(); loadFromSheet({ silent: true });
-  }, 100);
-
-  // Expose to global
-  window.editRecord = editRecord; window.deleteRecord = deleteRecord; window.handleSave = handleSave;
-  window.resetFormAndClearSelection = resetFormAndClearSelection; window.refreshTable = refreshTable;
-  window.calculatePendingAndRemaining = calculatePendingAndRemaining; window.calculateRemaining = calculateRemaining;
-  window.exportExcel = exportExcel; window.toggleForm = toggleForm; window.closeForm = closeForm;
-  window.openFormForEdit = openFormForEdit; window.loadFromSheet = loadFromSheet; window.clearAllData = clearAllData;
-  window.formatDateInput = formatDateInput; window.validateDateInput = validateDateInput;
+  // APP CORE START
+  window.onload = () => {
+    resetFormAndClearSelection();
+    loadFromSheet({ silent: true });
+  };
 </script>
 </body>
 </html>
