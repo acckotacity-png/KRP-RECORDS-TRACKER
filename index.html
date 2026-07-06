@@ -127,7 +127,7 @@
     @media (min-width: 900px) { .dash-card.success { grid-column: auto; } }
     .dash-card.success .dash-value { color: #1e7e34; }
 
-    /* Entry/Update Panel Form Overlay (Brought to front with z-index 3000 to overlap month popup) */
+    /* Entry/Update Panel Form Overlay */
     .data-entry-panel {
       position: fixed;
       top: 10px;
@@ -368,9 +368,9 @@
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label>DATE (DD-MM-YYYY) 🔒</label>
-        <input type="text" id="fDate" class="date-input" placeholder="DD-MM-YYYY" maxlength="10" oninput="formatDateInput(this)" onblur="validateDateInput(this)" />
-        <span class="date-hint">Format: DD-MM-YYYY</span>
+        <label>DATE (SELECT FROM CALENDAR) 📅</label>
+        <input type="date" id="fDate" onchange="refreshMonthDropdownFromDate(); calculatePendingAndRemaining();" />
+        <span class="date-hint">Click icon to open calendar</span>
       </div>
       <div class="form-group">
         <label>MONTH</label>
@@ -507,44 +507,40 @@
   let currentActivePopupMonth = null; 
 
   // ============================================================
-  // DATE CONTROLS
+  // DATE CONVERSION CONTROLS (Calendar & UI compatibility)
   // ============================================================
-  function formatDateInput(input) {
-    let value = input.value.replace(/\D/g, '');
-    if (value.length > 8) value = value.slice(0, 8);
-    let formatted = '';
-    if (value.length > 0) {
-      formatted = value.slice(0, 2);
-      if (value.length > 2) formatted += '-' + value.slice(2, 4);
-      if (value.length > 4) formatted += '-' + value.slice(4, 8);
-    }
-    input.value = formatted;
-  }
-
-  function validateDateInput(input) {
-    const value = input.value.trim();
-    if (!value) return true;
-    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if (!match) { alert('⚠️ Format error! Use DD-MM-YYYY'); input.focus(); return false; }
-    const day = parseInt(match[1]), month = parseInt(match[2]), year = parseInt(match[3]);
-    if (month < 1 || month > 12) { alert('⚠️ Month must be 01-12'); input.focus(); return false; }
-    const daysInMonth = new Date(year, month, 0).getDate();
-    if (day < 1 || day > daysInMonth) { alert(`⚠️ Day error for this month`); input.focus(); return false; }
-    refreshMonthDropdownFromDate();
-    return true;
-  }
-
   function getDateFromInput(input) {
     const value = input.value.trim();
     if (!value) return null;
-    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    // html input type="date" yields YYYY-MM-DD
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!match) return null;
-    return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+    return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
   }
 
-  function getTodayDateString() {
+  function getTodayIsoString() {
     const today = new Date();
-    return `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  // Convert DD-MM-YYYY to YYYY-MM-DD for visual calendar input element
+  function convertDisplayToIsoDate(displayDate) {
+    if (!displayDate) return '';
+    const bits = displayDate.split('-');
+    if (bits.length === 3 && bits[2].length === 4) {
+      return `${bits[2]}-${bits[1]}-${bits[0]}`;
+    }
+    return displayDate;
+  }
+
+  // Convert YYYY-MM-DD to DD-MM-YYYY for user display & storage
+  function convertIsoToDisplayDate(isoDate) {
+    if (!isoDate) return '';
+    const bits = isoDate.split('-');
+    if (bits.length === 3 && bits[0].length === 4) {
+      return `${bits[2]}-${bits[1]}-${bits[0]}`;
+    }
+    return isoDate;
   }
 
   // ============================================================
@@ -707,6 +703,14 @@
   // ============================================================
   // HELPERS AND MATHEMATICS
   // ============================================================
+  function parseDateValue(v) {
+    if (!v) return null;
+    const str = String(v).trim();
+    const m = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (m) return new Date(m[3], m[2]-1, m[1]).getTime();
+    const p = new Date(str); return isNaN(p) ? null : p.getTime();
+  }
+
   function formatDateForDisplay(v) {
     if (!v) return '';
     const str = String(v).trim();
@@ -733,14 +737,6 @@
 
   document.addEventListener('keydown', function(e) { if(e.key === 'Escape') { closeForm(); closeMonthLedger(); } });
 
-  function parseDateValue(v) {
-    if (!v) return null;
-    const str = String(v).trim();
-    const m = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (m) return new Date(m[3], m[2]-1, m[1]).getTime();
-    const p = new Date(str); return isNaN(p) ? null : p.getTime();
-  }
-
   function recalculateDerivedRecords(list) {
     const sorted = sortByDateAsc(list.map(r => ({
       id: r.id, date: formatDateForDisplay(r.date), month: formatMonthForDisplay(r.month, r.date),
@@ -760,7 +756,10 @@
     const workingAmt = parseFloat(document.getElementById('fWorkingAmt').value) || 0;
     const transferAmt = parseFloat(document.getElementById('fTransferAmt').value) || 0;
     const monthlyPaid = parseFloat(document.getElementById('fMonthlyPaid').value) || 0;
-    const tTime = parseDateValue(document.getElementById('fDate').value);
+    
+    // Convert YYYY-MM-DD back to standard display timestamp to rank items correctly
+    const displayDateValue = convertIsoToDisplayDate(document.getElementById('fDate').value);
+    const tTime = parseDateValue(displayDateValue);
     
     let prevRemaining = 0;
     if (tTime) {
@@ -818,6 +817,7 @@
     updateDashboard();
   }
 
+  // Dashboard calculations
   function updateDashboard() {
     if(!records.length) {
       ['dashMonths','dashTotalId'].forEach(id => document.getElementById(id).textContent = '0');
@@ -835,15 +835,16 @@
   }
 
   // ============================================================
-  // CRUD CALLS (3-Step Confirmation System Enabled)
+  // CRUD ACTIONS
   // ============================================================
   function handleSave() {
-    const dInput = document.getElementById('fDate');
-    if (!validateDateInput(dInput)) return;
-    const date = dInput.value; if(!date) { alert('Date is required!'); return; }
+    const isoDate = document.getElementById('fDate').value;
+    if(!isoDate) { alert('Please select a valid date from Calendar!'); return; }
+
+    const finalDisplayDate = convertIsoToDisplayDate(isoDate);
 
     const newRec = {
-      date: formatDateForDisplay(date),
+      date: finalDisplayDate,
       month: document.getElementById('fMonth').value,
       totalId: parseInt(document.getElementById('fTotalId').value) || 0,
       workingAmt: parseFloat(document.getElementById('fWorkingAmt').value) || 0,
@@ -889,7 +890,10 @@
   function editRecord(id) {
     const rec = records.find(r => r.id === id); if (!rec) return;
     editingRowId = id;
-    document.getElementById('fDate').value = rec.date;
+    
+    // Map existing display date (DD-MM-YYYY) back to native Calendar (YYYY-MM-DD)
+    document.getElementById('fDate').value = convertDisplayToIsoDate(rec.date);
+    
     populateMonthDropdown(document.getElementById('fMonth'), rec.month, getDateFromInput(document.getElementById('fDate')));
     document.getElementById('fTotalId').value = rec.totalId || '';
     document.getElementById('fWorkingAmt').value = rec.workingAmt || '';
@@ -906,7 +910,7 @@
     document.getElementById('entryPanel').classList.add('show'); 
   }
 
-  // 3-Bar Confirmation Delete Loop (Applicable for outside and inside table rows)
+  // 3-Bar Confirmation Delete Loop
   function deleteRecord(id) {
     if (!confirm('🚨 (CONFIRMATION 1/3): Kya aap sach me is entry ko delete karna chahte hain?')) return;
     if (!confirm('⚠️ (CONFIRMATION 2/3): Warning! Delete karne ke bhaad ye data dobara nahi aayega. Kya aap aage badhna chahte hain?')) return;
@@ -925,7 +929,7 @@
 
   function resetFormAndClearSelection() {
     editingRowId = null;
-    document.getElementById('fDate').value = getTodayDateString();
+    document.getElementById('fDate').value = getTodayIsoString();
     populateMonthDropdown(document.getElementById('fMonth'), null, new Date());
     ['fTotalId','fWorkingAmt','fTransferAmt','fMonthlyPaid','fOtherAmt','fRemarks','fTotalPending','fRemainingAmt'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('editRowId').style.display = 'none';
