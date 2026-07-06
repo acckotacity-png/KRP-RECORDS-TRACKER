@@ -183,9 +183,8 @@
       border-color: #1a73e8;
       box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
     }
-    .form-group input[type="text"].date-input {
-      font-family: 'Inter', monospace;
-      letter-spacing: 0.5px;
+    .form-group input[type="date"].date-input {
+      font-family: 'Inter', sans-serif;
     }
     .form-actions {
       display: flex;
@@ -330,7 +329,6 @@
 <body>
 
 <div class="app-container" id="app">
-  <!-- HEADER -->
   <div class="crm-header">
     <h1><i class="fas fa-cloud"></i> CRM · Google Sheet</h1>
     <div class="header-actions">
@@ -341,7 +339,6 @@
     </div>
   </div>
 
-  <!-- DASHBOARD -->
   <div class="dashboard" id="dashboard">
     <div class="dash-card highlight">
       <div class="dash-label"><i class="fas fa-calendar-alt"></i> Total Months</div>
@@ -369,7 +366,6 @@
     </div>
   </div>
 
-  <!-- ENTRY / EDIT FORM -->
   <div class="data-entry-panel" id="entryPanel">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <span style="font-weight: 500; font-size: 1rem;"><i class="fas fa-pen-fancy" style="color:#1a73e8; margin-right: 8px;"></i><span id="formTitle">Add New Record</span></span>
@@ -377,10 +373,9 @@
     </div>
     <div class="form-grid" id="formGrid">
       <div class="form-group">
-        <label>DATE (DD-MM-YYYY) 🔒</label>
-        <input type="text" id="fDate" class="date-input" placeholder="DD-MM-YYYY" maxlength="10" 
-               oninput="formatDateInput(this)" onblur="validateDateInput(this)" />
-        <span class="date-hint">Format: DD-MM-YYYY (e.g., 15-01-2026)</span>
+        <label>DATE 📅</label>
+        <input type="date" id="fDate" class="date-input" onchange="refreshMonthDropdownFromDate(); calculatePendingAndRemaining();" />
+        <span class="date-hint">Select from the calendar picker</span>
       </div>
       <div class="form-group">
         <label>MONTH (3 Months Back & Forward)</label>
@@ -425,7 +420,6 @@
     </div>
   </div>
 
-  <!-- TABLE -->
   <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; flex-wrap: wrap;">
     <span style="font-weight: 500;"><i class="fas fa-list-ul" style="color: #1a73e8;"></i> All Records (Sorted by Date - Ascending) (<span id="rowCount">0</span>)</span>
     <span id="statusMessage" class="status-msg"><i class="fas fa-check-circle"></i> Ready</span>
@@ -464,93 +458,48 @@
   let jsonpCounter = 0;
 
   // ============================================================
-  // DATE INPUT FORMATTING - LOCKED TO DD-MM-YYYY
+  // DATE INPUT HANDLING - UPDATED FOR NATIVE CALENDAR PICKER
   // ============================================================
   function formatDateInput(input) {
-    // Remove all non-digit characters
-    let value = input.value.replace(/\D/g, '');
-    
-    // Limit to 8 digits (DDMMYYYY)
-    if (value.length > 8) {
-      value = value.slice(0, 8);
-    }
-    
-    // Format as DD-MM-YYYY
-    let formatted = '';
-    if (value.length > 0) {
-      formatted = value.slice(0, 2);
-      if (value.length > 2) {
-        formatted += '-' + value.slice(2, 4);
-      }
-      if (value.length > 4) {
-        formatted += '-' + value.slice(4, 8);
-      }
-    }
-    
-    input.value = formatted;
+    // native date input handles formatting automatically
+    return;
   }
 
   function validateDateInput(input) {
     const value = input.value.trim();
-    if (!value) return true;
-    
-    // Check format DD-MM-YYYY
-    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if (!match) {
-      alert('⚠️ Invalid date format! Please use DD-MM-YYYY (e.g., 15-01-2026)');
-      input.focus();
+    if (!value) {
+      alert('⚠️ Please select a valid date.');
       return false;
     }
-    
-    const day = parseInt(match[1]);
-    const month = parseInt(match[2]);
-    const year = parseInt(match[3]);
-    
-    // Validate day, month, year
-    if (month < 1 || month > 12) {
-      alert('⚠️ Invalid month! Please enter a month between 01 and 12.');
-      input.focus();
-      return false;
-    }
-    
-    const daysInMonth = new Date(year, month, 0).getDate();
-    if (day < 1 || day > daysInMonth) {
-      alert(`⚠️ Invalid day! ${month}/${year} has ${daysInMonth} days.`);
-      input.focus();
-      return false;
-    }
-    
-    if (year < 1900 || year > 2100) {
-      alert('⚠️ Invalid year! Please enter a year between 1900 and 2100.');
-      input.focus();
-      return false;
-    }
-    
-    // Auto-update month dropdown based on date
     refreshMonthDropdownFromDate();
     return true;
   }
 
+  // HTML Date Picker (YYYY-MM-DD) से JavaScript Date Object बनाने के लिए
   function getDateFromInput(input) {
     const value = input.value.trim();
     if (!value) return null;
     
-    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if (!match) return null;
-    
-    const day = parseInt(match[1]);
-    const month = parseInt(match[2]) - 1;
-    const year = parseInt(match[3]);
-    
-    return new Date(year, month, day);
+    // HTML5 date input outputs as YYYY-MM-DD
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+      // Fallback fallback if it matches DD-MM-YYYY
+      const dmyMatch = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+      if (dmyMatch) {
+        return new Date(parseInt(dmyMatch[3]), parseInt(dmyMatch[2]) - 1, parseInt(dmyMatch[1]));
+      }
+      return null;
+    }
+    return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
   }
 
-  function getTodayDateString() {
+  // कैलेंडर इनपुट (YYYY-MM-DD) के डिफ़ॉल्ट वैल्यू के लिए स्ट्रिंग जनरेटर
+  function getTodayDateStringForInput() {
     const today = new Date();
     const day = pad2(today.getDate());
     const month = pad2(today.getMonth() + 1);
     const year = today.getFullYear();
-    return `${day}-${month}-${year}`;
+    return `${year}-${month}-${day}`; 
   }
 
   // ============================================================
@@ -757,6 +706,7 @@
     return String(value).padStart(2, '0');
   }
 
+  // तारीख को UI टेबल में हमेशा DD-MM-YYYY दिखाने के लिए
   function formatDateForDisplay(value) {
     if (!value) return '';
     if (value instanceof Date && !isNaN(value)) {
@@ -770,7 +720,7 @@
       return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
     }
 
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (isoMatch) {
       return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
     }
@@ -783,37 +733,37 @@
     return str;
   }
 
+  // एडिट करते समय HTML कैलेंडर इनपुट में (YYYY-MM-DD) सेट करने के लिए
   function formatDateForInput(value) {
     if (!value) return '';
-    if (value instanceof Date && !isNaN(value)) {
-      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
-    }
+    let parsed = null;
 
     const str = String(value).trim();
-    
     const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
     if (dmyMatch) {
-      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
+      parsed = new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
+    } else {
+      const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoMatch) {
+        parsed = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+      } else {
+        parsed = new Date(str);
+      }
     }
 
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (isoMatch) {
-      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
-    }
-
-    const parsed = new Date(str);
-    if (!isNaN(parsed)) {
-      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
+    if (parsed && !isNaN(parsed.getTime())) {
+      return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}-${pad2(parsed.getDate())}`;
     }
 
     return '';
   }
 
+  // गूगल शीट में हमेशा DD-MM-YYYY भेजने के लिए लॉक किया गया फॉर्मेट
   function formatDateForSheet(value) {
     if (!value) return '';
     const str = String(value).trim();
     
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (isoMatch) {
       return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
     }
@@ -908,7 +858,7 @@
       return new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1])).getTime();
     }
 
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (isoMatch) {
       return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3])).getTime();
     }
@@ -929,17 +879,6 @@
       if (aTime === null) return 1;
       if (bTime === null) return -1;
       return aTime - bTime;
-    });
-  }
-
-  function sortByDateDesc(recordsList) {
-    return [...recordsList].sort((a, b) => {
-      const aTime = parseDateValue(a.date);
-      const bTime = parseDateValue(b.date);
-      if (aTime === null && bTime === null) return 0;
-      if (aTime === null) return 1;
-      if (bTime === null) return -1;
-      return bTime - aTime;
     });
   }
 
@@ -1124,7 +1063,7 @@
       return;
     }
     
-    const date = dateInput.value;
+    const date = dateInput.value; // YYYY-MM-DD from picker
     const monthSelect = document.getElementById('fMonth');
     const month = formatMonthForDisplay(monthSelect.value, date);
     const totalId = parseFloat(document.getElementById('fTotalId').value) || 0;
@@ -1137,7 +1076,7 @@
     const remainingAmt = parseFloat(document.getElementById('fRemainingAmt').value) || 0;
 
     if (!date || !month) {
-      alert('⚠️ Please enter DATE and MONTH (required).');
+      alert('⚠️ Please select DATE and MONTH (required).');
       return;
     }
 
@@ -1237,7 +1176,6 @@
     callGSAction('saveRecord', data)
       .then(() => {
         isSynced = true;
-        updateSyncStatus();
       })
       .catch(err => {
         updateStatus('⚠️ Failed to sync: ' + err.message, 'error');
@@ -1248,7 +1186,6 @@
     callGSAction('updateRecord', data, rowIndex)
       .then(() => {
         isSynced = true;
-        updateSyncStatus();
       })
       .catch(err => {
         updateStatus('⚠️ Failed to update: ' + err.message, 'error');
@@ -1259,7 +1196,6 @@
     callGSAction('deleteRecord', null, rowIndex)
       .then(() => {
         isSynced = false;
-        updateSyncStatus();
         updateStatus('🗑️ Record deleted from Google Sheet');
       })
       .catch(err => {
@@ -1275,7 +1211,6 @@
       .then(() => {
         records = [];
         isSynced = false;
-        updateSyncStatus();
         renderTable();
         updateStatus('🗑️ All data cleared from Google Sheet');
       })
@@ -1288,8 +1223,8 @@
   // HELPER FUNCTIONS
   // ============================================================
   function resetFormAndClearSelection() {
-    const todayStr = getTodayDateString();
-    document.getElementById('fDate').value = todayStr;
+    const todayStrInput = getTodayDateStringForInput();
+    document.getElementById('fDate').value = todayStrInput;
     
     const dateObj = getDateFromInput(document.getElementById('fDate'));
     const monthSelect = document.getElementById('fMonth');
@@ -1329,10 +1264,6 @@
       el.innerHTML = '<i class="fas fa-circle" style="color:#1a73e8; font-size: 0.5rem;"></i> ' + msg;
       el.className = 'status-msg';
     }
-  }
-
-  function updateSyncStatus() {
-    return;
   }
 
   // ============================================================
@@ -1405,35 +1336,10 @@
   }
 
   // ============================================================
-  // SEED DEMO DATA
-  // ============================================================
-  function seedDemoData() {
-    const demo = [
-      { date: '15-01-2026', month: 'Jan-2026', totalId: 101, workingAmt: 4500, transferAmt: 1200, monthlyPaid: 2000, otherAmt: 350, remarks: 'Setup fee' },
-      { date: '02-02-2026', month: 'Feb-2026', totalId: 102, workingAmt: 7800, transferAmt: 2400, monthlyPaid: 3000, otherAmt: 500, remarks: 'Upload complete' },
-      { date: '10-03-2026', month: 'Mar-2026', totalId: 103, workingAmt: 3200, transferAmt: 800, monthlyPaid: 1500, otherAmt: 0, remarks: 'Pending review' }
-    ];
-    
-    demo.forEach(item => {
-      const rec = { 
-        ...item, 
-        id: generateId(),
-        totalPending: 0,
-        remainingAmt: 0
-      };
-      records.push(rec);
-    });
-    
-    records = recalculateDerivedRecords(records);
-    renderTable();
-    updateStatus('📊 Demo data loaded with date-wise calculations');
-  }
-
-  // ============================================================
   // INIT
   // ============================================================
-  const todayStr = getTodayDateString();
-  document.getElementById('fDate').value = todayStr;
+  const todayStrInput = getTodayDateStringForInput();
+  document.getElementById('fDate').value = todayStrInput;
   
   const dateObj = getDateFromInput(document.getElementById('fDate'));
   const monthSelect = document.getElementById('fMonth');
@@ -1442,7 +1348,6 @@
   setTimeout(() => {
     calculatePendingAndRemaining();
     updateDashboard();
-    updateSyncStatus();
     renderTable();
     loadFromSheet({ silent: true });
   }, 100);
@@ -1464,11 +1369,7 @@
   window.formatDateInput = formatDateInput;
   window.validateDateInput = validateDateInput;
 
-  console.log('✅ CRM with Google Sheet integration ready!');
-  console.log('📌 Web App URL:', GS_URL);
-  console.log('📅 Date format: DD-MM-YYYY (LOCKED)');
-  console.log('📊 Records sorted by date: Ascending (oldest to newest)');
-  console.log('📆 Month dropdown: 3 months back and 3 months forward');
+  console.log('✅ CRM Calendar Fix Applied Ready!');
 </script>
 </body>
 </html>
