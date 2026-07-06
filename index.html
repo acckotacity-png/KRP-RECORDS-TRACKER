@@ -183,8 +183,9 @@
       border-color: #1a73e8;
       box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
     }
-    .form-group input[type="date"].date-input {
-      font-family: 'Inter', sans-serif;
+    .form-group input[type="text"].date-input {
+      font-family: 'Inter', monospace;
+      letter-spacing: 0.5px;
     }
     .form-actions {
       display: flex;
@@ -224,7 +225,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 0.76rem;
-      min-width: 940px;
+      min-width: 1100px; /* Thoda width badha diya taaki saare columns sahi se aayein */
       table-layout: fixed;
     }
     th {
@@ -300,28 +301,18 @@
       color: #6c81a0;
       margin-top: 2px;
     }
+    
+    /* Responsive Styles - Hiding columns rules removed to keep Remarks visible always */
     @media (max-width: 700px) {
       body { padding: 0.5rem; }
       .app-container { padding: 0.8rem; border-radius: 16px; }
       .crm-header { flex-direction: column; align-items: start; gap: 10px; }
       .form-grid { grid-template-columns: 1fr 1fr; }
       .dashboard { grid-template-columns: 1fr 1fr; }
-      table { min-width: 860px; }
       .data-entry-panel {
         top: 64px;
         width: calc(100vw - 12px);
         max-height: calc(100vh - 80px);
-      }
-    }
-    @media (max-width: 1100px) {
-      th:nth-child(8), td:nth-child(8),
-      th:nth-child(9), td:nth-child(9) {
-        display: none;
-      }
-    }
-    @media (max-width: 900px) {
-      th:nth-child(4), td:nth-child(4) {
-        display: none;
       }
     }
   </style>
@@ -373,9 +364,10 @@
     </div>
     <div class="form-grid" id="formGrid">
       <div class="form-group">
-        <label>DATE 📅</label>
-        <input type="date" id="fDate" class="date-input" onchange="refreshMonthDropdownFromDate(); calculatePendingAndRemaining();" />
-        <span class="date-hint">Select from the calendar picker</span>
+        <label>DATE (DD-MM-YYYY) 🔒</label>
+        <input type="text" id="fDate" class="date-input" placeholder="DD-MM-YYYY" maxlength="10" 
+               oninput="formatDateInput(this)" onblur="validateDateInput(this)" />
+        <span class="date-hint">Format: DD-MM-YYYY (e.g., 15-01-2026)</span>
       </div>
       <div class="form-group">
         <label>MONTH (3 Months Back & Forward)</label>
@@ -428,10 +420,10 @@
     <table id="dataTable">
       <thead>
         <tr>
-          <th>#</th>
+          <th style="width: 50px;">#</th>
           <th>DATE</th><th>MONTH</th><th>TOTAL ID</th>
           <th>WORKING AMOUNT</th><th>TRANSFER AMT</th><th>MONTHLY PAID AMT</th>
-          <th>OTHER AMT</th><th>REMARKS</th>
+          <th>OTHER AMT</th><th style="width: 150px;">REMARKS</th>
           <th style="background:#e8f0fe; color:#1a5fb0;">TOTAL PENDING</th>
           <th style="background:#e8f0fe; color:#1a5fb0;">REMAINING</th>
           <th style="min-width:130px;">ACTIONS</th>
@@ -458,48 +450,81 @@
   let jsonpCounter = 0;
 
   // ============================================================
-  // DATE INPUT HANDLING - UPDATED FOR NATIVE CALENDAR PICKER
+  // DATE INPUT FORMATTING - LOCKED TO DD-MM-YYYY
   // ============================================================
   function formatDateInput(input) {
-    // native date input handles formatting automatically
-    return;
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 8) {
+      value = value.slice(0, 8);
+    }
+    let formatted = '';
+    if (value.length > 0) {
+      formatted = value.slice(0, 2);
+      if (value.length > 2) {
+        formatted += '-' + value.slice(2, 4);
+      }
+      if (value.length > 4) {
+        formatted += '-' + value.slice(4, 8);
+      }
+    }
+    input.value = formatted;
   }
 
   function validateDateInput(input) {
     const value = input.value.trim();
-    if (!value) {
-      alert('⚠️ Please select a valid date.');
+    if (!value) return true;
+    
+    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!match) {
+      alert('⚠️ Invalid date format! Please use DD-MM-YYYY (e.g., 15-01-2026)');
+      input.focus();
       return false;
     }
+    
+    const day = parseInt(match[1]);
+    const month = parseInt(match[2]);
+    const year = parseInt(match[3]);
+    
+    if (month < 1 || month > 12) {
+      alert('⚠️ Invalid month! Please enter a month between 01 and 12.');
+      input.focus();
+      return false;
+    }
+    
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) {
+      alert(`⚠️ Invalid day! ${month}/${year} has ${daysInMonth} days.`);
+      input.focus();
+      return false;
+    }
+    
+    if (year < 1900 || year > 2100) {
+      alert('⚠️ Invalid year! Please enter a year between 1900 and 2100.');
+      input.focus();
+      return false;
+    }
+    
     refreshMonthDropdownFromDate();
     return true;
   }
 
-  // HTML Date Picker (YYYY-MM-DD) से JavaScript Date Object बनाने के लिए
   function getDateFromInput(input) {
     const value = input.value.trim();
     if (!value) return null;
-    
-    // HTML5 date input outputs as YYYY-MM-DD
-    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) {
-      // Fallback fallback if it matches DD-MM-YYYY
-      const dmyMatch = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-      if (dmyMatch) {
-        return new Date(parseInt(dmyMatch[3]), parseInt(dmyMatch[2]) - 1, parseInt(dmyMatch[1]));
-      }
-      return null;
-    }
-    return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+    const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!match) return null;
+    const day = parseInt(match[1]);
+    const month = parseInt(match[2]) - 1;
+    const year = parseInt(match[3]);
+    return new Date(year, month, day);
   }
 
-  // कैलेंडर इनपुट (YYYY-MM-DD) के डिफ़ॉल्ट वैल्यू के लिए स्ट्रिंग जनरेटर
-  function getTodayDateStringForInput() {
+  function getTodayDateString() {
     const today = new Date();
     const day = pad2(today.getDate());
     const month = pad2(today.getMonth() + 1);
     const year = today.getFullYear();
-    return `${year}-${month}-${day}`; 
+    return `${day}-${month}-${year}`;
   }
 
   // ============================================================
@@ -507,11 +532,9 @@
   // ============================================================
   function loadFromSheet(options = {}) {
     const silent = options.silent !== false;
-
     if (!silent) {
       updateStatus('Loading data...', 'loading');
     }
-
     jsonpRequest({ action: 'getRecords' })
       .then(data => {
         if (data.status === 'success' && data.data) {
@@ -544,7 +567,6 @@
     const params = { action };
     if (data) params.data = JSON.stringify(data);
     if (rowIndex !== null) params.rowIndex = String(rowIndex);
-
     return jsonpRequest(params).then(result => {
       if (result.status === 'success') {
         return result;
@@ -562,29 +584,24 @@
       const script = document.createElement('script');
       const query = new URLSearchParams();
       query.set('callback', callbackName);
-
       Object.keys(params || {}).forEach(key => {
         if (params[key] !== undefined && params[key] !== null) {
           query.set(key, params[key]);
         }
       });
-
       const cleanup = () => {
         if (window[callbackName]) delete window[callbackName];
         if (script.parentNode) script.parentNode.removeChild(script);
       };
-
       const timeoutId = setTimeout(() => {
         cleanup();
         reject(new Error('Request timed out'));
       }, 15000);
-
       window[callbackName] = function (payload) {
         clearTimeout(timeoutId);
         cleanup();
         resolve(payload);
       };
-
       script.src = GS_URL + '?' + query.toString();
       script.async = true;
       script.onerror = function () {
@@ -592,7 +609,6 @@
         cleanup();
         reject(new Error('Unable to load Google Sheet response'));
       };
-
       (document.head || document.body || document.documentElement).appendChild(script);
     });
   }
@@ -630,7 +646,7 @@
   }
 
   // ============================================================
-  // MONTH DROPDOWN - 3 months back and 3 months forward
+  // MONTH DROPDOWN
   // ============================================================
   function getMonthOptions(anchorDate = new Date()) {
     const baseDate = anchorDate instanceof Date ? anchorDate : new Date(anchorDate);
@@ -638,7 +654,6 @@
     const currentYear = validBase.getFullYear();
     const currentMonth = validBase.getMonth();
     const months = [];
-    
     for (let offset = -3; offset <= 3; offset++) {
       const d = new Date(currentYear, currentMonth + offset, 1);
       const year = d.getFullYear();
@@ -659,17 +674,14 @@
     if (!selectElement) return;
     const dateInput = document.getElementById('fDate');
     let dateObj = null;
-    
     if (anchorDate) {
       dateObj = anchorDate;
     } else if (dateInput && dateInput.value) {
       dateObj = getDateFromInput(dateInput);
     }
-    
     if (!dateObj || isNaN(dateObj)) {
       dateObj = new Date();
     }
-    
     const options = getMonthOptions(dateObj);
     selectElement.innerHTML = '';
     options.forEach(opt => {
@@ -693,7 +705,6 @@
     const dateInput = document.getElementById('fDate');
     const monthSelect = document.getElementById('fMonth');
     if (!dateInput || !monthSelect) return;
-    
     const currentSelected = monthSelect.value || null;
     const dateValue = getDateFromInput(dateInput);
     populateMonthDropdown(monthSelect, currentSelected, dateValue);
@@ -706,78 +717,63 @@
     return String(value).padStart(2, '0');
   }
 
-  // तारीख को UI टेबल में हमेशा DD-MM-YYYY दिखाने के लिए
   function formatDateForDisplay(value) {
     if (!value) return '';
     if (value instanceof Date && !isNaN(value)) {
       return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
     }
-
     const str = String(value).trim();
-    
     const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
     if (dmyMatch) {
       return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
     }
-
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
       return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
     }
-
     const parsed = new Date(str);
     if (!isNaN(parsed)) {
       return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
     }
-
     return str;
   }
 
-  // एडिट करते समय HTML कैलेंडर इनपुट में (YYYY-MM-DD) सेट करने के लिए
   function formatDateForInput(value) {
     if (!value) return '';
-    let parsed = null;
-
+    if (value instanceof Date && !isNaN(value)) {
+      return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()}`;
+    }
     const str = String(value).trim();
-    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (dmyMatch) {
-      parsed = new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
-    } else {
-      const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (isoMatch) {
-        parsed = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
-      } else {
-        parsed = new Date(str);
-      }
-    }
-
-    if (parsed && !isNaN(parsed.getTime())) {
-      return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}-${pad2(parsed.getDate())}`;
-    }
-
-    return '';
-  }
-
-  // गूगल शीट में हमेशा DD-MM-YYYY भेजने के लिए लॉक किया गया फॉर्मेट
-  function formatDateForSheet(value) {
-    if (!value) return '';
-    const str = String(value).trim();
-    
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (isoMatch) {
-      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
-    }
-    
     const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
     if (dmyMatch) {
       return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
     }
-    
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
+    }
     const parsed = new Date(str);
     if (!isNaN(parsed)) {
       return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
     }
-    
+    return '';
+  }
+
+  function formatDateForSheet(value) {
+    if (!value) return '';
+    const str = String(value).trim();
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
+    }
+    const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (dmyMatch) {
+      return `${pad2(dmyMatch[1])}-${pad2(dmyMatch[2])}-${dmyMatch[3]}`;
+    }
+    const parsed = new Date(str);
+    if (!isNaN(parsed)) {
+      return `${pad2(parsed.getDate())}-${pad2(parsed.getMonth() + 1)}-${parsed.getFullYear()}`;
+    }
     return str;
   }
 
@@ -793,20 +789,11 @@
   function extractMonthName(value) {
     const str = String(value || '').toLowerCase();
     const months = [
-      ['jan', 'january'],
-      ['feb', 'february'],
-      ['mar', 'march'],
-      ['apr', 'april'],
-      ['may'],
-      ['jun', 'june'],
-      ['jul', 'july'],
-      ['aug', 'august'],
-      ['sep', 'sept', 'september'],
-      ['oct', 'october'],
-      ['nov', 'november'],
-      ['dec', 'december']
+      ['jan', 'january'], ['feb', 'february'], ['mar', 'march'],
+      ['apr', 'april'], ['may'], ['jun', 'june'],
+      ['jul', 'july'], ['aug', 'august'], ['sep', 'sept', 'september'],
+      ['oct', 'october'], ['nov', 'november'], ['dec', 'december']
     ];
-
     for (const names of months) {
       if (names.some(name => str.includes(name))) {
         return names[0].slice(0, 1).toUpperCase() + names[0].slice(1, 3);
@@ -817,28 +804,23 @@
 
   function formatMonthForDisplay(value, fallbackDate = '') {
     if (!value) return '';
-
     const str = String(value).trim();
-    
     const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
     if (dmyMatch) {
       const d = new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1]));
       return d.toLocaleString('en-US', { month: 'short' }) + '-' + d.getFullYear();
     }
-
     const explicitMatch = str.match(/^([A-Za-z]{3,9})[-\s\/,]*?(\d{2,4})$/);
     if (explicitMatch) {
       const monthToken = explicitMatch[1].slice(0, 3).charAt(0).toUpperCase() + explicitMatch[1].slice(1, 3).toLowerCase();
       const yearToken = explicitMatch[2].length === 2 ? `20${explicitMatch[2]}` : explicitMatch[2];
       return `${monthToken}-${yearToken}`;
     }
-
     const monthToken = extractMonthName(str);
     if (monthToken) {
       const yearToken = extractYear(str) || extractYear(fallbackDate) || new Date().getFullYear();
       return `${monthToken}-${yearToken}`;
     }
-
     return str;
   }
 
@@ -850,26 +832,22 @@
   function parseDateValue(value) {
     if (!value) return null;
     if (value instanceof Date && !isNaN(value)) return value.getTime();
-
     const str = String(value).trim();
-    
     const dmyMatch = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
     if (dmyMatch) {
       return new Date(Number(dmyMatch[3]), Number(dmyMatch[2]) - 1, Number(dmyMatch[1])).getTime();
     }
-
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
       return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3])).getTime();
     }
-
     const parsed = new Date(str);
     if (!isNaN(parsed)) return parsed.getTime();
     return null;
   }
 
   // ============================================================
-  // SORTING - Ascending order (oldest to newest)
+  // SORTING - Ascending order
   // ============================================================
   function sortByDateAsc(recordsList) {
     return [...recordsList].sort((a, b) => {
@@ -899,17 +877,15 @@
   }
 
   // ============================================================
-  // RECALCULATE DERIVED RECORDS - Date wise calculations
+  // RECALCULATE DERIVED RECORDS
   // ============================================================
   function recalculateDerivedRecords(recordsList) {
     const sorted = sortByDateAsc(recordsList.map(normalizeLoadedRecord));
     let previousRemaining = 0;
-
     return sorted.map((rec) => {
       const totalPending = rec.workingAmt + previousRemaining;
       const remainingAmt = totalPending - rec.transferAmt - rec.monthlyPaid;
       previousRemaining = remainingAmt;
-
       return {
         ...rec,
         totalPending: Number.isFinite(totalPending) ? totalPending : 0,
@@ -919,24 +895,20 @@
   }
 
   // ============================================================
-  // AUTO CALCULATION - Date wise previous remaining
+  // AUTO CALCULATION
   // ============================================================
   function getPreviousRemainingForDate(targetDate, excludeId = null) {
     const targetTime = parseDateValue(targetDate);
     if (targetTime === null) return 0;
-    
     let filteredRecords = [...records];
     if (excludeId !== null) {
       filteredRecords = filteredRecords.filter(r => r.id !== excludeId);
     }
-    
     const previousRecords = filteredRecords.filter(r => {
       const rTime = parseDateValue(r.date);
       return rTime !== null && rTime <= targetTime;
     });
-    
     if (previousRecords.length === 0) return 0;
-    
     const sorted = sortByDateAsc(previousRecords);
     const lastRecord = sorted[sorted.length - 1];
     return lastRecord.remainingAmt || 0;
@@ -957,10 +929,8 @@
         prevRemaining = getPreviousRemainingForDate(date);
       }
     }
-
     const totalPending = workingAmt + prevRemaining;
     const remaining = totalPending - transferAmt - monthlyPaid;
-
     document.getElementById('fTotalPending').value = totalPending.toFixed(2);
     document.getElementById('fRemainingAmt').value = remaining.toFixed(2);
   }
@@ -986,10 +956,8 @@
       document.getElementById('dashRemainingTransferable').textContent = '₹0';
       return;
     }
-
     const uniqueMonths = new Set(records.map(r => r.month));
     document.getElementById('dashMonths').textContent = uniqueMonths.size;
-
     let totalId = 0, working = 0, transfer = 0, monthlyPaid = 0;
     records.forEach(r => {
       totalId += r.totalId || 0;
@@ -997,9 +965,7 @@
       transfer += r.transferAmt || 0;
       monthlyPaid += r.monthlyPaid || 0;
     });
-
     const remainingTransferable = working - transfer - monthlyPaid;
-
     document.getElementById('dashTotalId').textContent = totalId;
     document.getElementById('dashWorking').textContent = '₹' + working.toFixed(2);
     document.getElementById('dashTransfer').textContent = '₹' + transfer.toFixed(2);
@@ -1008,11 +974,10 @@
   }
 
   // ============================================================
-  // RENDER TABLE - Always show in ascending date order
+  // RENDER TABLE
   // ============================================================
   function renderTable(silent = false) {
     const sortedRecords = sortByDateAsc(records);
-    
     const tbody = document.getElementById('tableBody');
     const rowCountSpan = document.getElementById('rowCount');
     if (!sortedRecords.length) {
@@ -1062,8 +1027,7 @@
     if (!validateDateInput(dateInput)) {
       return;
     }
-    
-    const date = dateInput.value; // YYYY-MM-DD from picker
+    const date = dateInput.value;
     const monthSelect = document.getElementById('fMonth');
     const month = formatMonthForDisplay(monthSelect.value, date);
     const totalId = parseFloat(document.getElementById('fTotalId').value) || 0;
@@ -1076,7 +1040,7 @@
     const remainingAmt = parseFloat(document.getElementById('fRemainingAmt').value) || 0;
 
     if (!date || !month) {
-      alert('⚠️ Please select DATE and MONTH (required).');
+      alert('⚠️ Please enter DATE and MONTH (required).');
       return;
     }
 
@@ -1132,7 +1096,6 @@
     if (!rec) return;
     
     document.getElementById('fDate').value = formatDateForInput(rec.date);
-    
     const monthSelect = document.getElementById('fMonth');
     const dateObj = getDateFromInput(document.getElementById('fDate'));
     populateMonthDropdown(monthSelect, formatMonthForDisplay(rec.month, rec.date) || null, dateObj);
@@ -1151,7 +1114,6 @@
     document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit" style="color:#1a73e8;"></i> Edit Record (Row ' + editingRowId + ')';
     document.getElementById('saveBtn').innerHTML = '<i class="fas fa-pen"></i> Update';
     updateStatus('✏️ Editing row: ' + editingRowId);
-    
     openFormForEdit();
   }
 
@@ -1163,7 +1125,6 @@
     deleteRecordFromSheet(id);
     records = records.filter(r => r.id !== id);
     records = recalculateDerivedRecords(records);
-    
     if (editingRowId === id) resetFormAndClearSelection();
     renderTable();
     updateStatus('🗑️ Deleted record ID: ' + id);
@@ -1182,50 +1143,36 @@
       });
   }
 
+  // ============================================================
+  // OTHER CONTROLS
+  // ============================================================
   function updateRecordInSheet(rowIndex, data) {
     callGSAction('updateRecord', data, rowIndex)
-      .then(() => {
-        isSynced = true;
-      })
-      .catch(err => {
-        updateStatus('⚠️ Failed to update: ' + err.message, 'error');
-      });
+      .then(() => { isSynced = true; })
+      .catch(err => { updateStatus('⚠️ Failed to update: ' + err.message, 'error'); });
   }
 
   function deleteRecordFromSheet(rowIndex) {
     callGSAction('deleteRecord', null, rowIndex)
-      .then(() => {
-        isSynced = false;
-        updateStatus('🗑️ Record deleted from Google Sheet');
-      })
-      .catch(err => {
-        updateStatus('⚠️ Failed to delete from sheet: ' + err.message, 'error');
-      });
+      .then(() => { updateStatus('🗑️ Record deleted from Google Sheet'); })
+      .catch(err => { updateStatus('⚠️ Failed to delete from sheet: ' + err.message, 'error'); });
   }
 
   function clearAllData() {
     if (!confirm('⚠️ This will delete ALL data from the sheet. Are you sure?')) return;
     if (!confirm('⚠️ Final confirmation: This cannot be undone!')) return;
-    
     callGSAction('clearAllData')
       .then(() => {
         records = [];
-        isSynced = false;
         renderTable();
         updateStatus('🗑️ All data cleared from Google Sheet');
       })
-      .catch(err => {
-        updateStatus('⚠️ Failed to clear data: ' + err.message, 'error');
-      });
+      .catch(err => { updateStatus('⚠️ Failed to clear data: ' + err.message, 'error'); });
   }
 
-  // ============================================================
-  // HELPER FUNCTIONS
-  // ============================================================
   function resetFormAndClearSelection() {
-    const todayStrInput = getTodayDateStringForInput();
-    document.getElementById('fDate').value = todayStrInput;
-    
+    const todayStr = getTodayDateString();
+    document.getElementById('fDate').value = todayStr;
     const dateObj = getDateFromInput(document.getElementById('fDate'));
     const monthSelect = document.getElementById('fMonth');
     populateMonthDropdown(monthSelect, null, dateObj);
@@ -1237,32 +1184,24 @@
     document.getElementById('fRemarks').value = '';
     document.getElementById('fTotalPending').value = '';
     document.getElementById('fRemainingAmt').value = '';
-    
     editingRowId = null;
     document.getElementById('editRowId').style.display = 'none';
     document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle" style="color:#1a73e8;"></i> Add New Record';
     document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save"></i> Save';
     updateStatus('📝 New entry mode');
-    
     calculatePendingAndRemaining();
   }
 
-  function refreshTable() {
-    renderTable();
-    updateStatus('🔄 Refreshed');
-  }
+  function refreshTable() { renderTable(); updateStatus('🔄 Refreshed'); }
 
   function updateStatus(msg, type = 'normal') {
     const el = document.getElementById('statusMessage');
     if (type === 'loading') {
-      el.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ' + msg;
-      el.className = 'status-msg loading';
+      el.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ' + msg; el.className = 'status-msg loading';
     } else if (type === 'error') {
-      el.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msg;
-      el.className = 'status-msg error';
+      el.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msg; el.className = 'status-msg error';
     } else {
-      el.innerHTML = '<i class="fas fa-circle" style="color:#1a73e8; font-size: 0.5rem;"></i> ' + msg;
-      el.className = 'status-msg';
+      el.innerHTML = '<i class="fas fa-circle" style="color:#1a73e8; font-size: 0.5rem;"></i> ' + msg; el.className = 'status-msg';
     }
   }
 
@@ -1270,106 +1209,54 @@
   // EXCEL EXPORT
   // ============================================================
   function exportExcel() {
-    if (records.length === 0) {
-      alert('⚠️ No data to export.');
-      return;
-    }
-
+    if (records.length === 0) { alert('⚠️ No data to export.'); return; }
     const sortedRecords = sortByDateAsc(records);
-    
     const excelData = sortedRecords.map((rec, index) => ({
-      '#': index + 1,
-      'DATE': rec.date || '',
-      'MONTH': rec.month || '',
-      'TOTAL ID': rec.totalId || 0,
-      'WORKING AMOUNT': rec.workingAmt || 0,
-      'TRANSFER AMT': rec.transferAmt || 0,
-      'MONTHLY PAID AMT': rec.monthlyPaid || 0,
-      'OTHER AMT FROM SETUP AND UPLOADING': rec.otherAmt || 0,
-      'REMARKS': rec.remarks || '',
-      'TOTAL PENDING AMT': rec.totalPending || 0,
-      'REMAINING AMT': rec.remainingAmt || 0
+      '#': index + 1, 'DATE': rec.date || '', 'MONTH': rec.month || '', 'TOTAL ID': rec.totalId || 0,
+      'WORKING AMOUNT': rec.workingAmt || 0, 'TRANSFER AMT': rec.transferAmt || 0, 'MONTHLY PAID AMT': rec.monthlyPaid || 0,
+      'OTHER AMT FROM SETUP AND UPLOADING': rec.otherAmt || 0, 'REMARKS': rec.remarks || '',
+      'TOTAL PENDING AMT': rec.totalPending || 0, 'REMAINING AMT': rec.remainingAmt || 0
     }));
-
     let totalId = 0, working = 0, transfer = 0, monthlyPaid = 0, other = 0, totalPending = 0, remaining = 0;
     sortedRecords.forEach(r => {
-      totalId += r.totalId || 0;
-      working += r.workingAmt || 0;
-      transfer += r.transferAmt || 0;
-      monthlyPaid += r.monthlyPaid || 0;
-      other += r.otherAmt || 0;
-      totalPending += r.totalPending || 0;
-      remaining += r.remainingAmt || 0;
+      totalId += r.totalId || 0; working += r.workingAmt || 0; transfer += r.transferAmt || 0;
+      monthlyPaid += r.monthlyPaid || 0; other += r.otherAmt || 0; totalPending += r.totalPending || 0; remaining += r.remainingAmt || 0;
     });
-
     excelData.push({
-      '#': 'TOTAL',
-      'DATE': '',
-      'MONTH': '',
-      'TOTAL ID': totalId,
-      'WORKING AMOUNT': working,
-      'TRANSFER AMT': transfer,
-      'MONTHLY PAID AMT': monthlyPaid,
-      'OTHER AMT FROM SETUP AND UPLOADING': other,
-      'REMARKS': '',
-      'TOTAL PENDING AMT': totalPending,
-      'REMAINING AMT': remaining
+      '#': 'TOTAL', 'DATE': '', 'MONTH': '', 'TOTAL ID': totalId, 'WORKING AMOUNT': working,
+      'TRANSFER AMT': transfer, 'MONTHLY PAID AMT': monthlyPaid, 'OTHER AMT FROM SETUP AND UPLOADING': other,
+      'REMARKS': '', 'TOTAL PENDING AMT': totalPending, 'REMAINING AMT': remaining
     });
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(excelData);
-    
+    const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(excelData);
     ws['!cols'] = [
-      { wch: 6 }, { wch: 14 }, { wch: 14 }, { wch: 12 },
-      { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 30 },
-      { wch: 20 }, { wch: 18 }, { wch: 16 }
+      { wch: 6 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 14 },
+      { wch: 18 }, { wch: 30 }, { wch: 20 }, { wch: 18 }, { wch: 16 }
     ];
-
     XLSX.utils.book_append_sheet(wb, ws, 'CRM_Data');
-    
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const filename = `CRM_Report_${dateStr}.xlsx`;
-    
-    XLSX.writeFile(wb, filename);
-    updateStatus('📥 Excel exported successfully!');
+    const filename = `CRM_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, filename); updateStatus('📥 Excel exported successfully!');
   }
 
   // ============================================================
   // INIT
   // ============================================================
-  const todayStrInput = getTodayDateStringForInput();
-  document.getElementById('fDate').value = todayStrInput;
-  
+  const todayStr = getTodayDateString();
+  document.getElementById('fDate').value = todayStr;
   const dateObj = getDateFromInput(document.getElementById('fDate'));
   const monthSelect = document.getElementById('fMonth');
   populateMonthDropdown(monthSelect, null, dateObj);
   
   setTimeout(() => {
-    calculatePendingAndRemaining();
-    updateDashboard();
-    renderTable();
-    loadFromSheet({ silent: true });
+    calculatePendingAndRemaining(); updateDashboard(); renderTable(); loadFromSheet({ silent: true });
   }, 100);
 
   // Expose to global
-  window.editRecord = editRecord;
-  window.deleteRecord = deleteRecord;
-  window.handleSave = handleSave;
-  window.resetFormAndClearSelection = resetFormAndClearSelection;
-  window.refreshTable = refreshTable;
-  window.calculatePendingAndRemaining = calculatePendingAndRemaining;
-  window.calculateRemaining = calculateRemaining;
-  window.exportExcel = exportExcel;
-  window.toggleForm = toggleForm;
-  window.closeForm = closeForm;
-  window.openFormForEdit = openFormForEdit;
-  window.loadFromSheet = loadFromSheet;
-  window.clearAllData = clearAllData;
-  window.formatDateInput = formatDateInput;
-  window.validateDateInput = validateDateInput;
-
-  console.log('✅ CRM Calendar Fix Applied Ready!');
+  window.editRecord = editRecord; window.deleteRecord = deleteRecord; window.handleSave = handleSave;
+  window.resetFormAndClearSelection = resetFormAndClearSelection; window.refreshTable = refreshTable;
+  window.calculatePendingAndRemaining = calculatePendingAndRemaining; window.calculateRemaining = calculateRemaining;
+  window.exportExcel = exportExcel; window.toggleForm = toggleForm; window.closeForm = closeForm;
+  window.openFormForEdit = openFormForEdit; window.loadFromSheet = loadFromSheet; window.clearAllData = clearAllData;
+  window.formatDateInput = formatDateInput; window.validateDateInput = validateDateInput;
 </script>
 </body>
 </html>
